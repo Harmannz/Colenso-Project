@@ -1,0 +1,15 @@
+{
+    "name": "Colense Project",
+    "version": "0.1.0",
+    "description": "SWEN303 Website Assignment to display Colenso letters",
+    "main": "app.js",
+    "dependencies": {
+        "express": "~4.13.3",
+        "body-parser": "~1.15.0",
+        "mongodb": "~2.1.3",
+        "nunjucks": "~2.2.0",
+        "nunjucks-date": "~1.2.0"
+    },
+    "author": "Harman Singh",
+	"license": "MIT"
+}
