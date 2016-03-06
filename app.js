@@ -44,20 +44,22 @@ var nunjucksDate = require('nunjucks-date');
 nunjucksDate.setDefaultFormat('MMMM Do YYYY, h:mm:ss a');
 env.addFilter("date", nunjucksDate);
 
-var ITEMS_PER_PAGE = 5;
-
-// Hardcoded USERID for use with the shopping cart portion
-var USERID = "558098a65133816958968d88";
-
     var router = express.Router();
 
     // Homepage
     router.get("/", function(req, res) {
         "use strict";
         
-    
-		res.render('index');
+		res.render('index', {isHomePage: true});
     });
+    
+    // Explore
+    router.get("/explore", function(req, res) {
+        "use strict";
+        
+		res.render('index', {isHomePage: false});
+    });
+    
     
     // Use the router routes in our application
     app.use('/', router);
