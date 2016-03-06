@@ -23,7 +23,6 @@
     <!-- Custom Fonts -->
     <link href="static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
-    <link href='https://fonts.googleapis.com/css?family=Kaushan+Script' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
 
@@ -38,41 +37,7 @@
 
 <body id="page-top" class="index">
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-default navbar-fixed-top">
-        <div class="container">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header page-scroll">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand page-scroll" href="#page-top">Colenso Project</a>
-            </div>
-
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-right">
-                    <li class="hidden">
-                        <a href="#page-top"></a>
-                    </li>
-                    <li>
-                        <a class="page-scroll" href="#services">About</a>
-                    </li>
-					<li>
-                        <a class="page-scroll" href="#">Explore</a>
-                    </li>
-					<li>
-                        <a class="page-scroll" href="#">Contribute</a>
-                    </li>
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container-fluid -->
-    </nav>
+    {% include "includes/navbar.html" %}
 
     <!-- Header -->
     <header style="position:relative;">
@@ -101,7 +66,7 @@
             </div>
             <div class="row text-center">
                 <div class="col-md-6">
-				    <a href="#">
+				    <a href="/explore">
 						<span class="fa-stack fa-5x">
 							<i class="fa fa-circle fa-stack-2x text-primary"></i>
 							<i class="fa fa-university fa-stack-1x fa-inverse"></i>
@@ -137,33 +102,8 @@
         </div>
     </aside>
     
-
-    <footer>
-        <div class="container">
-            <div class="row">
-                <div class="col-md-2">
-                    <span class="copyright">Harman Singh 2016</span>
-                </div>
-                <div class="col-md-10">
-                    <ul class="list-inline quicklinks">
-                        <li><a href="http://www.williamcolenso.co.nz/about-william-colenso/the-colenso-society">Colenso Society</a>
-                        </li>
-                        <li><a href="http://www.victoria.ac.nz/">Victoria University of Wellington</a>
-                        </li>
-						<li><a href="http://www.mtghawkesbay.com/">MTG Hawke's Bay</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- jQuery -->
-    <script src="static/js/jquery.js"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="static/js/bootstrap.min.js"></script>
-
+	{% include "includes/footer.html" %}
+    
     <!-- Plugin JavaScript -->
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
     <script src="static/js/classie.js"></script>
@@ -175,7 +115,6 @@
 	<!-- particles-js -->
 	<script src="static/js/particles.js/particles.js"></script>
 	<script src="static/js/particles.js/app.js"></script>
-
 </body>
 
 </html>
