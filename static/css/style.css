@@ -1,0 +1,15 @@
+#search{
+	padding:100px;
+}
+#search-button{
+	background-color : #91a23c;
+	color:#fff;
+	border-color:#333
+}
+
+#search-text{
+	border-color:#333;
+}
+@media (min-width:768px){
+#search{padding:100px}
+}
