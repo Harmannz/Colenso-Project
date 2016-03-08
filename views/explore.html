@@ -19,6 +19,8 @@
 	
 	<!-- Custom CSS -->
     <link href="static/css/style.css" rel="stylesheet">
+	<!-- Datatables CSS -->
+	<link rel="stylesheet" type="text/css" href="static/DataTables-1.10.11/css/dataTables.bootstrap.min.css"/>
 	
     <!-- Custom Fonts -->
     <link href="static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
@@ -62,7 +64,39 @@
 					  <span class="input-group-btn">
 						<button class="btn btn-default" type="button" id="search-button">Search</button>
 					  </span>
-					</div><!-- /input-group -->					
+					</div><!-- /input-group -->	
+
+					<table id="example-table" class="table table-striped table-bordered table-responsive">
+						<thead>
+							<tr>
+								<th>Author</th>
+								<th>Type</th>
+								<th>file</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>William Colenso</td>
+								<td>Diary</td>
+								<td>Diary.xml</td>
+							</tr>
+							<tr>
+								<td>Garrett Winters</td>
+								<td>Accountant</td>
+								<td>Tokyo</td>
+							</tr>
+							<tr>
+								<td>Tiger Nixon</td>
+								<td>System Architect</td>
+								<td>Edinburgh</td>
+							</tr>
+							<tr>
+								<td>Garrett Winters</td>
+								<td>Accountant</td>
+								<td>Tokyo</td>
+							</tr>
+						</tbody>
+					</table>
                 </div>
 				
             </div>
@@ -79,6 +113,15 @@
     <!-- Custom Theme JavaScript -->
     <script src="static/js/agency.js"></script>
 	
+	<script type="text/javascript" src="static/DataTables-1.10.11/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="static/DataTables-1.10.11/js/dataTables.bootstrap.min.js"></script>
+	
+	<script>
+	$(document).ready(function() {
+		$('#example-table').DataTable({
+		});
+	} );
+	</script>
 </body>
 
 </html>
