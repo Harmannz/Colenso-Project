@@ -1,5 +1,5 @@
 #search{
-	padding:100px;
+	padding:80px 0px;
 }
 #search-button{
 	background-color : #91a23c;
@@ -11,5 +11,5 @@
 	border-color:#333;
 }
 @media (min-width:768px){
-#search{padding:100px}
+#search{padding:100px 0px}
 }

@@ -66,12 +66,14 @@ env.addFilter("date", nunjucksDate);
     // Explore
     router.get("/explore", function(req, res) {
         "use strict";
-	/*
+		/*
 		// create session
 		var session = new basex.Session("localhost", 1984, "admin", "admin");
+		session.execute("open colenso/diary/diary.xml")
 		basex.debug_mode = false;
+		
 		// create query instance
-		var input = 'for $item in db:list("colenso")return $item'; 
+		var input = 'for $item in collection("colenso/Colenso/diary/diary.xml") return db:path($item)'; 
 		
 		var query = session.query(input);
 
@@ -82,8 +84,8 @@ env.addFilter("date", nunjucksDate);
 
 		// close session
 		session.close();
-		
-	*/
+		*/
+	
 		var category = {name: "All", count : 10}
 		var categories = [category];
 		
