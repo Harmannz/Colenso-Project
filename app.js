@@ -87,7 +87,7 @@ env.addFilter("date", nunjucksDate);
 		*/
 	
 		var category = {name: "All", count : 10}
-		var categories = [category];
+		var categories = [{name: "All", count : 4},{name: "Colenso", count : 1}];
 		
 		res.render('explore', {isHomePage: false,
 								categories : categories});

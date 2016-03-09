@@ -58,7 +58,7 @@
 						{% endfor %}
 					</div>
 				</div>
-                <div class="col-md-6">
+                <div class="col-md-9">
 					<div class="input-group">
 					  <input type="text" class="form-control" id="search-text" placeholder="Text Search... ">
 					  <span class="input-group-btn">
@@ -119,6 +119,9 @@
 	<script>
 	$(document).ready(function() {
 		$('#example-table').DataTable({
+			"bFilter": false,
+    	    "bInfo": false,
+    	    "dom": 'rt<"bottom"flp>'
 		});
 	} );
 	</script>
