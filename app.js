@@ -26,7 +26,6 @@
 var express = require('express'),
     bodyParser = require('body-parser'),
     nunjucks = require('nunjucks'),
-    MongoClient = require('mongodb').MongoClient,
     assert = require('assert'),
 	basex  = require("basex"),
 	log = require("./debug")
@@ -67,7 +66,18 @@ env.addFilter("date", nunjucksDate);
     // Explore
     router.get("/explore", function(req, res) {
         "use strict";
+		var author = req.query.author;
+		var filetype = req.query.ftype;
+		var collection="";
 		
+		if (author){
+			if (filetype) {
+				collection = ".children." + author + ".children." + filetype;		
+			}else{
+				collection = ".children." + author;			
+			}	
+		}
+		console.log(collection);
 		// create session
 		var session = new basex.Session("localhost", 1984, "admin", "admin");
 		basex.debug_mode = false;
@@ -88,9 +98,10 @@ env.addFilter("date", nunjucksDate);
 				result_array.push(result.result[i].split('/'));
 			}
 			convertToHierarchy(rootNode, result_array);
-			console.log(rootNode.children.Colenso.children.diary);
+			console.log(author);
+			console.log(author ? rootNode.children[author] : rootNode.children);
 			res.render('explore', {isHomePage: false,
-								categories : rootNode.children});
+								categories : author ? rootNode.children[author].children : rootNode.children});
 		});
 
 		// close query instance
@@ -100,8 +111,8 @@ env.addFilter("date", nunjucksDate);
 		session.close();
 		
 		//if 
-		var category = {name: "All", count : 10}
-		var categories = [{name: "All", count : 4},{name: "Colenso", count : 1}];
+		//var category = {name: "All", count : 10}
+	 	//var categories = [{name: "All", count : 4},{name: "Colenso", count : 1}];
 		
     });
     

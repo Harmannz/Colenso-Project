@@ -18,7 +18,7 @@ function buildNodeRecursive(node, path, idx)
         {
             node.children[item] = {children:{}, count:0};
         }
-			node.count = Object.keys(node.children).length;
+		node.count = Object.keys(node.children).length;
 		
         buildNodeRecursive(node.children[item], path, idx + 1);
     }
