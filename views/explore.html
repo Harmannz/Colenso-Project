@@ -47,13 +47,13 @@
             <div class="row">
 				<div class="col-md-3">
 					<div class="list-group">
-						{% for category in categories %}
+						{% for category,value in categories %}
 						<a href="#"
 						   class="list-group-item inactive">
 						  <span class="badge">
-							{{category.count}}
+							{{value.count}}
 						  </span>
-						  {{category.name}}
+						  {{category}}
 						</a>
 						{% endfor %}
 					</div>

@@ -29,7 +29,8 @@ var express = require('express'),
     MongoClient = require('mongodb').MongoClient,
     assert = require('assert'),
 	basex  = require("basex"),
-	log = require("./debug");
+	log = require("./debug")
+	convertToHierarchy = require("./data/navigation").convertToHierarchy;
 
 
 // Set up express
@@ -66,31 +67,42 @@ env.addFilter("date", nunjucksDate);
     // Explore
     router.get("/explore", function(req, res) {
         "use strict";
-		/*
+		
 		// create session
 		var session = new basex.Session("localhost", 1984, "admin", "admin");
-		session.execute("open colenso/diary/diary.xml")
 		basex.debug_mode = false;
 		
 		// create query instance
-		var input = 'for $item in collection("colenso/Colenso/diary/diary.xml") return db:path($item)'; 
+		var input = 'for $item in collection("colenso") return db:path($item)'; 
 		
 		var query = session.query(input);
-
-		query.results(log.print);
+		// Build the node structure
+		var rootNode = {children:{}};
+		
+		query.results( function (err, result) {
+			assert.equal(err, null);
+			//convert result to array of array
+			var result_array = [];
+			for (var i = 0; i < result.result.length; i++){
+				
+				result_array.push(result.result[i].split('/'));
+			}
+			convertToHierarchy(rootNode, result_array);
+			console.log(rootNode.children.Colenso.children.diary);
+			res.render('explore', {isHomePage: false,
+								categories : rootNode.children});
+		});
 
 		// close query instance
 		query.close();
 
 		// close session
 		session.close();
-		*/
-	
+		
+		//if 
 		var category = {name: "All", count : 10}
 		var categories = [{name: "All", count : 4},{name: "Colenso", count : 1}];
 		
-		res.render('explore', {isHomePage: false,
-								categories : categories});
     });
     
     
