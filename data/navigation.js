@@ -14,11 +14,13 @@ function buildNodeRecursive(node, path, idx)
     if (idx < path.length)
     {
         item = path[idx];
+		
         if (!node.children[item])
         {
-            node.children[item] = {children:{}, count:0};
+            node.children[item] = {children:{}, count:0, 'path':"/" + path.join('/')};
         }
-			node.count = Object.keys(node.children).length;
+		node.path = "/" + path.slice(0,idx).join("/");
+		node.count = Object.keys(node.children).length;
 		
         buildNodeRecursive(node.children[item], path, idx + 1);
     }

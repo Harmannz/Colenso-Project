@@ -28,7 +28,7 @@ var express = require('express'),
     nunjucks = require('nunjucks'),
     assert = require('assert'),
 	basex  = require("basex"),
-	log = require("./debug")
+	log = require("./debug"),
 	convertToHierarchy = require("./data/navigation").convertToHierarchy;
 
 
@@ -66,18 +66,7 @@ env.addFilter("date", nunjucksDate);
     // Explore
     router.get("/explore", function(req, res) {
         "use strict";
-		var author = req.query.author;
-		var filetype = req.query.ftype;
-		var collection="";
 		
-		if (author){
-			if (filetype) {
-				collection = ".children." + author + ".children." + filetype;		
-			}else{
-				collection = ".children." + author;			
-			}	
-		}
-		console.log(collection);
 		// create session
 		var session = new basex.Session("localhost", 1984, "admin", "admin");
 		basex.debug_mode = false;
@@ -98,10 +87,9 @@ env.addFilter("date", nunjucksDate);
 				result_array.push(result.result[i].split('/'));
 			}
 			convertToHierarchy(rootNode, result_array);
-			console.log(author);
-			console.log(author ? rootNode.children[author] : rootNode.children);
+			console.log(rootNode.children['Colenso']);
 			res.render('explore', {isHomePage: false,
-								categories : author ? rootNode.children[author].children : rootNode.children});
+								categories : rootNode.children});
 		});
 
 		// close query instance
@@ -116,6 +104,74 @@ env.addFilter("date", nunjucksDate);
 		
     });
     
+	router.get("/explore/:author", function(req, res){
+		var author = req.params.author;
+		
+		// create session
+		var session = new basex.Session("localhost", 1984, "admin", "admin");
+		basex.debug_mode = false;
+		
+		// create query instance
+		var input = 'for $item in collection("colenso") return db:path($item)'; 
+		
+		var query = session.query(input);
+		// Build the node structure
+		var rootNode = {children:{}};
+		
+		query.results( function (err, result) {
+			assert.equal(err, null);
+			//convert result to array of array
+			var result_array = [];
+			for (var i = 0; i < result.result.length; i++){
+				
+				result_array.push(result.result[i].split('/'));
+			}
+			convertToHierarchy(rootNode, result_array);
+			res.render('explore', {isHomePage: false,
+								categories : author ? rootNode.children[author].children : rootNode.children});
+		});
+
+		// close query instance
+		query.close();
+
+		// close session
+		session.close();
+	});
+	
+	router.get("/explore/:author/:filetype", function(req, res){
+		var author = req.params.author;
+		var filetype = req.params.filetype;
+		
+		// create session
+		var session = new basex.Session("localhost", 1984, "admin", "admin");
+		basex.debug_mode = false;
+		
+		// create query instance
+		var input = 'for $item in collection("colenso") return db:path($item)'; 
+		
+		var query = session.query(input);
+		// Build the node structure
+		var rootNode = {children:{}, path:""};
+		
+		query.results( function (err, result) {
+			assert.equal(err, null);
+			//convert result to array of array
+			var result_array = [];
+			for (var i = 0; i < result.result.length; i++){
+				
+				result_array.push(result.result[i].split('/'));
+			}
+			convertToHierarchy(rootNode, result_array);
+			console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
+			res.render('explore', {isHomePage: false});
+		});
+
+		// close query instance
+		query.close();
+
+		// close session
+		session.close();
+	});
     
     // Use the router routes in our application
     app.use('/', router);
