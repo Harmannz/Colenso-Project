@@ -152,18 +152,3 @@ env.addFilter("date", nunjucksDate);
         var port = server.address().port;
         console.log('Colenso Project listening on port %s.', port);
     });
-
-	
-function ParseXML(val)
-{
-    if (window.DOMParser)
-      {
-        parser=new DOMParser();
-        xmlDoc=parser.parseFromString(val,"text/xml");
-      }
-    else // Internet Explorer
-      {
-        xmlDoc = new ActiveXObject("Microsoft.XMLDOM"); xmlDoc.loadXML(val);
-      }
-return xmlDoc ;
-}
