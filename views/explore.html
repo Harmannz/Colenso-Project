@@ -43,7 +43,21 @@
 	
         <!-- Services Section -->
     <div id="search">
+	
         <div class="container">
+			<div class="row">
+			  <div class="col-md-12">
+				<ol class="breadcrumb">
+					<li><a href="/explore">Explore</a></li>
+					{% if breadcrumbs.author and not breadcrumbs.type %}
+						<li class="active">{{breadcrumbs.author | replace("_", " ") | capitalize}}</li>
+					{% elif breadcrumbs.type %}
+						<li><a href="/explore/{{breadcrumbs.author}}">{{breadcrumbs.author | replace("_", " ") | capitalize}}</a></li>
+						<li class="active">{{breadcrumbs.type | replace("_", " ") | capitalize}}</li>
+					{% endif %}
+				</ol>
+			  </div>
+			</div>
             <div class="row">
 				<div class="col-md-3">
 					<div class="list-group">
@@ -77,10 +91,18 @@
 						<tbody>
 							{% for link in links %}
 							<tr>
-								<td>{{link.type | replace("_", " ") | capitalize}}</td>
+							
+								{% if link.author %}
+									<td>{{link.author}}</td>
+								{% elif link.author == '' %}
+									<td>Unknown Author</td>
+								{% endif %}	
 								
-								
-									<td><a href="/{{link.path}}">{{link.title}}</a></td>
+								{% if link.type %}
+									<td>{{link.type | replace("_", " ") | capitalize}}</td>
+								{% endif %}	
+										
+								<td><a href="/{{link.path}}">{{link.title}}</a></td>
 								
 							</tr>
 							{% endfor %}

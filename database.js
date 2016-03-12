@@ -46,10 +46,11 @@ function Database() {
 		// create query instance
 		
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
-					'<result>{for $item in collection("' + this.db + '/' + collection + '")/TEI/teiHeader/fileDesc/titleStmt ' +
+					'<result>{for $item in collection("' + this.db + '/' + collection + '")/TEI/teiHeader ' +
 					'let $path := db:path($item) ' +
-					'let $title := substring($item//title/text(), 0,200) ' +
-					'return <link><path>{$path}</path><title>{$title}</title></link>}</result>';
+					'let $title := substring($item/fileDesc/titleStmt//title/text(), 0,200)' +
+					'let $author := $item//titleStmt//author//text()' +
+					'return <link><path>{$path}</path><title>{$title}</title><author>{$author}</author></link>}</result>';
 		
 		var query = this.session.query(input);
 		query.execute(function (err, result) {

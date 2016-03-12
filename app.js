@@ -69,15 +69,26 @@ env.addFilter("date", nunjucksDate);
         "use strict";
 		
 		database.loadStructure(function(rootNode){
+			database.getFileInfo("", function(result){
+				
+				var $ = cheerio.load(result, { xmlMode: true });
+				var links = [];
+				$('link').each(function(i, elem){
+					
+					var path = $(elem).find('path').text();
+					var title = $(elem).find('title').text();
+					var type = path.split('/')[1];
+					var author = $(elem).find('author').text();
+					links.push({"path" : path, "title" : title, "type" : type, "author" : author});
+				});
+				console.log(links);
 			
-			res.render('explore', {isHomePage: false,
-								categories : rootNode.children});
-		});
-		
-		//if 
-		//var category = {name: "All", count : 10}
-	 	//var categories = [{name: "All", count : 4},{name: "Colenso", count : 1}];
-		
+				res.render('explore', {isHomePage: false, categories : rootNode.children,
+					tableHeader : ["Author","Type","Title"],
+					"links" : links});
+				
+			});
+		});	
     });
     
 	router.get("/explore/:author", function(req, res){
@@ -98,7 +109,8 @@ env.addFilter("date", nunjucksDate);
 		
 				res.render('explore', {isHomePage: false, categories : author ? rootNode.children[author].children : rootNode.children,
 				tableHeader : ["Type","Title"],
-				"links" : links});
+				"links" : links,
+				breadcrumbs : {author: author}});
 				
 			});
 			
@@ -109,10 +121,27 @@ env.addFilter("date", nunjucksDate);
 		"use strict";
 		var author = req.params.author;
 		var filetype = req.params.filetype;
-		 database.loadStructure(function(rootNode){
-			console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
-			res.render('explore', {isHomePage: false});
-		});
+		database.loadStructure(function(rootNode){
+			database.getFileInfo(author, function(result){
+				 var $ = cheerio.load(result, { xmlMode: true });
+					var links = [];
+					$('link').each(function(i, elem){
+						
+						var path = $(elem).find('path').text();
+						var title = $(elem).find('title').text();
+						links.push({"path" : path, "title" : title});
+					});
+					console.log(links);
+				
+					res.render('explore', {isHomePage: false,
+						tableHeader : ["Title"],
+						"links" : links,
+						breadcrumbs : {author: author, type : filetype}});
+					
+				});
+				
+				//console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
+			});
 	});
     
     // Use the router routes in our application
