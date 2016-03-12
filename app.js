@@ -28,8 +28,9 @@ var express = require('express'),
     nunjucks = require('nunjucks'),
     assert = require('assert'),
 	basex  = require("basex"),
-	log = require("./debug"),
-	convertToHierarchy = require("./data/navigation").convertToHierarchy;
+	convertToHierarchy = require("./data/navigation").convertToHierarchy,
+	Database = require('./database').Database,
+	cheerio = require('cheerio');
 
 
 // Set up express
@@ -55,7 +56,7 @@ nunjucksDate.setDefaultFormat('MMMM Do YYYY, h:mm:ss a');
 env.addFilter("date", nunjucksDate);
 
     var router = express.Router();
-
+	var database = new Database();
     // Homepage
     router.get("/", function(req, res) {
         "use strict";
@@ -67,36 +68,11 @@ env.addFilter("date", nunjucksDate);
     router.get("/explore", function(req, res) {
         "use strict";
 		
-		// create session
-		var session = new basex.Session("localhost", 1984, "admin", "admin");
-		basex.debug_mode = false;
-		
-		// create query instance
-		var input = 'for $item in collection("colenso") return db:path($item)'; 
-		
-		var query = session.query(input);
-		// Build the node structure
-		var rootNode = {children:{}};
-		
-		query.results( function (err, result) {
-			assert.equal(err, null);
-			//convert result to array of array
-			var result_array = [];
-			for (var i = 0; i < result.result.length; i++){
-				
-				result_array.push(result.result[i].split('/'));
-			}
-			convertToHierarchy(rootNode, result_array);
-			console.log(rootNode.children['Colenso']);
+		database.loadStructure(function(rootNode){
+			
 			res.render('explore', {isHomePage: false,
 								categories : rootNode.children});
 		});
-
-		// close query instance
-		query.close();
-
-		// close session
-		session.close();
 		
 		//if 
 		//var category = {name: "All", count : 10}
@@ -105,72 +81,38 @@ env.addFilter("date", nunjucksDate);
     });
     
 	router.get("/explore/:author", function(req, res){
+		"use strict";
 		var author = req.params.author;
-		
-		// create session
-		var session = new basex.Session("localhost", 1984, "admin", "admin");
-		basex.debug_mode = false;
-		
-		// create query instance
-		var input = 'for $item in collection("colenso") return db:path($item)'; 
-		
-		var query = session.query(input);
-		// Build the node structure
-		var rootNode = {children:{}};
-		
-		query.results( function (err, result) {
-			assert.equal(err, null);
-			//convert result to array of array
-			var result_array = [];
-			for (var i = 0; i < result.result.length; i++){
+		database.loadStructure(function(rootNode){
+			database.getFileInfo(author, function(result){
 				
-				result_array.push(result.result[i].split('/'));
-			}
-			convertToHierarchy(rootNode, result_array);
-			res.render('explore', {isHomePage: false,
-								categories : author ? rootNode.children[author].children : rootNode.children});
+				var $ = cheerio.load(result, { xmlMode: true });
+				var links = [];
+				$('link').each(function(i, elem){
+					
+					var path = $(elem).find('path').text();
+					var title = $(elem).find('title').text();
+					var type = path.split('/')[1];
+					links.push({"path" : path, "title" : title, "type" : type});
+				});
+		
+				res.render('explore', {isHomePage: false, categories : author ? rootNode.children[author].children : rootNode.children,
+				tableHeader : ["Type","Title"],
+				"links" : links});
+				
+			});
+			
 		});
-
-		// close query instance
-		query.close();
-
-		// close session
-		session.close();
 	});
 	
 	router.get("/explore/:author/:filetype", function(req, res){
+		"use strict";
 		var author = req.params.author;
 		var filetype = req.params.filetype;
-		
-		// create session
-		var session = new basex.Session("localhost", 1984, "admin", "admin");
-		basex.debug_mode = false;
-		
-		// create query instance
-		var input = 'for $item in collection("colenso") return db:path($item)'; 
-		
-		var query = session.query(input);
-		// Build the node structure
-		var rootNode = {children:{}, path:""};
-		
-		query.results( function (err, result) {
-			assert.equal(err, null);
-			//convert result to array of array
-			var result_array = [];
-			for (var i = 0; i < result.result.length; i++){
-				
-				result_array.push(result.result[i].split('/'));
-			}
-			convertToHierarchy(rootNode, result_array);
+		 database.loadStructure(function(rootNode){
 			console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
 			res.render('explore', {isHomePage: false});
 		});
-
-		// close query instance
-		query.close();
-
-		// close session
-		session.close();
 	});
     
     // Use the router routes in our application
@@ -181,3 +123,18 @@ env.addFilter("date", nunjucksDate);
         var port = server.address().port;
         console.log('Colenso Project listening on port %s.', port);
     });
+
+	
+function ParseXML(val)
+{
+    if (window.DOMParser)
+      {
+        parser=new DOMParser();
+        xmlDoc=parser.parseFromString(val,"text/xml");
+      }
+    else // Internet Explorer
+      {
+        xmlDoc = new ActiveXObject("Microsoft.XMLDOM"); xmlDoc.loadXML(val);
+      }
+return xmlDoc ;
+}
