@@ -122,7 +122,7 @@ env.addFilter("date", nunjucksDate);
 		var author = req.params.author;
 		var filetype = req.params.filetype;
 		database.loadStructure(function(rootNode){
-			database.getFileInfo(author, function(result){
+			database.getFileInfo(author+"/"+filetype, function(result){
 				 var $ = cheerio.load(result, { xmlMode: true });
 					var links = [];
 					$('link').each(function(i, elem){
