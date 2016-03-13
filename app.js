@@ -83,9 +83,11 @@ env.addFilter("date", nunjucksDate);
 				});
 				console.log(links);
 			
-				res.render('explore', {isHomePage: false, categories : rootNode.children,
+				res.render('explore', {categories : rootNode.children,
 					tableHeader : ["Author","Type","Title"],
-					"links" : links});
+					"links" : links,
+					"hideBreadcrumb":true
+					});
 				
 			});
 		});	

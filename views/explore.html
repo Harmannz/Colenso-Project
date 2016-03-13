@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Harman Singh" >
 
     <title>The Colenso Project</title>
 
@@ -45,6 +45,7 @@
     <div id="search">
 	
         <div class="container">
+        {% if not hideBreadcrumb %}
 			<div class="row">
 			  <div class="col-md-12">
 				<ol class="breadcrumb">
@@ -58,6 +59,7 @@
 				</ol>
 			  </div>
 			</div>
+			{% endif %}
             <div class="row">
 				<div class="col-md-3">
 					<div class="list-group">
