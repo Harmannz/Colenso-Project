@@ -15,7 +15,7 @@ function Database() {
 		basex.debug_mode = false;
 		
 		// create query instance
-		var input = 'for $item in collection("' + this.db + '") return db:path($item)'; 
+		var input = 'for $item in collection("' + this.db + '") order by db:path($item) return db:path($item)'; 
 		
 		var query = this.session.query(input);
 		// Build the node structure
