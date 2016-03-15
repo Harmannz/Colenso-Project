@@ -12,4 +12,10 @@
 }
 @media (min-width:768px){
 #search{padding:100px 0px}
+#breadcrumbs{padding-top:100px}
+}
+
+
+#breadcrumbs{
+	padding-top:80px;
 }

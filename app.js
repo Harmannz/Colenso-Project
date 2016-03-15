@@ -123,27 +123,50 @@ env.addFilter("date", nunjucksDate);
 		"use strict";
 		var author = req.params.author;
 		var filetype = req.params.filetype;
-		database.loadStructure(function(rootNode){
+		
 			database.getFileInfo(author+"/"+filetype, function(result){
-				 var $ = cheerio.load(result, { xmlMode: true });
-					var links = [];
-					$('link').each(function(i, elem){
-						
-						var path = $(elem).find('path').text();
-						var title = $(elem).find('title').text();
-						links.push({"path" : path, "title" : title});
-					});
-					console.log(links);
+				var $ = cheerio.load(result, { xmlMode: true });
+				var links = [];
+				$('link').each(function(i, elem){
+					
+					var path = $(elem).find('path').text();
+					var title = $(elem).find('title').text();
+					links.push({"path" : path, "title" : title});
+				});
+				console.log(links);
 				
-					res.render('explore', {isHomePage: false,
-						tableHeader : ["Title"],
-						"links" : links,
-						breadcrumbs : {author: author, type : filetype}});
+				res.render('explore', {isHomePage: false,
+					tableHeader : ["Title"],
+					"links" : links,
+					breadcrumbs : {author: author, type : filetype}});
+				
+			});
+	});
+	
+	router.get("/explore/:author/:filetype/:filename", function(req, res){
+		"use strict";
+		var maxChar = 25;
+		var author = req.params.author;
+		var filetype = req.params.filetype;
+		var filename = req.params.filename;
+		
+			database.getFile(author+"/"+filetype+"/"+filename, function(result){
+				var $ = cheerio.load(result, { xmlMode: true });
+				var file = {};
+				var path = $('result').find('path').text().split("/");
+				var title = $('result').find('title').text();
+				var front = $('result').find('front').text();
+				var body = $('result').find('body').html();
+				console.log(body);
+				
+				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
+				
+				res.render('view', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename}});
 					
 				});
 				
 				//console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
-			});
+			
 	});
     
     // Use the router routes in our application
