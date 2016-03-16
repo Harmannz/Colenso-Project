@@ -76,17 +76,24 @@
 				</div>
 				
                 <div class="col-md-9">
-					<form class="form-inline" action="/explore">
+					<form class="form" action="/explore" id="search-form">
 						<div class="input-group">
-							<input type="hidden" name="searchtype" value="text" />
+							<input type="hidden" name="searchtype" value="text" id="searchtype"/>
 							
 							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder="Search... " {% else %} value ="{{query}}" {% endif %} >
 							
 							<span class="input-group-btn">
-								<button class="btn btn-default" type="button" id="search-button">Search</button>
+								<button class="btn btn-default" type="button" onclick="textsearchbuttonHandled(event);" id="search-button">Text Search</button>
+								<button class="btn btn-default" type="button" onclick="markupsearchbuttonHandled(event);" id="search-button">Markup Search</button>>
 							</span>
-						</div><!-- /input-group -->	
+						</div><!-- /input-group -->
+							
 					</form>
+					
+					{% if query %}
+						<p class="text-muted">Showing results for {{query}}</p>
+					{% endif %}
+					
 					<table id="example-table" class="table table-striped table-bordered table-responsive">
 						<thead>
 							<tr>
@@ -142,6 +149,16 @@
     	    "dom": 'rt<"bottom"flp>'
 		});
 	} );
+	
+	function textsearchbuttonHandled(event){
+		document.getElementById("searchtype").value="text";
+		document.getElementById("search-form").submit();	
+	};
+	
+	function markupsearchbuttonHandled(event){
+		document.getElementById("searchtype").value="markup";
+		document.getElementById("search-form").submit();	
+	}
 	</script>
 </body>
 

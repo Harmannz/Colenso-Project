@@ -54,14 +54,10 @@ var env = nunjucks.configure('views', {
 var nunjucksEnv = new nunjucks.Environment();
 
 env.addFilter('is_raw', function(str) {
-	console.log("in is_raw");
-	console.log(str == 'raw');
   return str == 'raw';
 });
 
 env.addFilter('is_text', function(str) {
-	console.log("in is_text");
-	console.log(str == 'text');
   return str == 'text';
 });
 
@@ -83,10 +79,11 @@ env.addFilter("date", nunjucksDate);
     // Explore
     router.get("/explore", function(req, res) {
         "use strict";
-
+		
 		var searchtype = req.query.searchtype;
-		if (searchtype == "text"){
-			var query = req.query.q;
+		var query = req.query.q;
+		if (searchtype == "text" && query){
+			
 		database.loadStructure(function(rootNode){
 			database.textSearch(query, function(result){
 				
