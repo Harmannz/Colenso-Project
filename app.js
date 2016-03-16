@@ -51,6 +51,22 @@ var env = nunjucks.configure('views', {
     express: app
 });
 
+var nunjucksEnv = new nunjucks.Environment();
+
+env.addFilter('is_raw', function(str) {
+	console.log("in is_raw");
+	console.log(str == 'raw');
+  return str == 'raw';
+});
+
+env.addFilter('is_text', function(str) {
+	console.log("in is_text");
+	console.log(str == 'text');
+  return str == 'text';
+});
+
+
+
 var nunjucksDate = require('nunjucks-date');
 nunjucksDate.setDefaultFormat('MMMM Do YYYY, h:mm:ss a');
 env.addFilter("date", nunjucksDate);
@@ -67,7 +83,34 @@ env.addFilter("date", nunjucksDate);
     // Explore
     router.get("/explore", function(req, res) {
         "use strict";
-		
+
+		var searchtype = req.query.searchtype;
+		if (searchtype == "text"){
+			var query = req.query.q;
+		database.loadStructure(function(rootNode){
+			database.textSearch(query, function(result){
+				
+				var $ = cheerio.load(result, { xmlMode: true });
+				var links = [];
+				$('link').each(function(i, elem){
+					
+					var path = $(elem).find('path').text();
+					var title = $(elem).find('title').text();
+					var type = path.split('/')[1];
+					var author = $(elem).find('author').text();
+					links.push({"path" : path, "title" : title, "type" : type, "author" : author});
+				});
+				console.log(links);
+			
+				res.render('explore', {categories : rootNode.children,
+					tableHeader : ["Author","Type","Title"],
+					"links" : links,
+					"query" : query
+					});
+				
+			});
+		});
+		}else{
 		database.loadStructure(function(rootNode){
 			database.getFileInfo("", function(result){
 				
@@ -91,6 +134,7 @@ env.addFilter("date", nunjucksDate);
 				
 			});
 		});	
+		}
     });
     
 	router.get("/explore/:author", function(req, res){
@@ -149,24 +193,48 @@ env.addFilter("date", nunjucksDate);
 		var author = req.params.author;
 		var filetype = req.params.filetype;
 		var filename = req.params.filename;
-		
-			database.getFile(author+"/"+filetype+"/"+filename, function(result){
+		var doctype = req.query.doctype;
+		console.log(doctype);
+		if (!(doctype == "raw" || doctype == "text" )){
+			doctype = "text";
+		}
+		if (doctype == "raw"){
+			console.log("showing raw xml")
+			//go to getFileRaw route and return whole document
+			database.getFileRaw(author+"/"+filetype+"/"+filename, function(result){
 				var $ = cheerio.load(result, { xmlMode: true });
-				var file = {};
 				var path = $('result').find('path').text().split("/");
 				var title = $('result').find('title').text();
 				var front = $('result').find('front').text();
-				var body = $('result').find('body').html();
+				var body = $('result').find('TEI').html();
+				
+				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
+				
+				res.render('view', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
+									doctype : "raw"});
+					
+				});
+			}
+		 else {
+		
+			database.getFile(author+"/"+filetype+"/"+filename, function(result){
+				var $ = cheerio.load(result, { xmlMode: true });
+				
+				var path = $('result').find('path').text().split("/");
+				var title = $('result').find('title').text();
+				var front = $('result').find('front').text();
+				var body = $('result').find('body').text();
 				console.log(body);
 				
 				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
 				
-				res.render('view', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename}});
+				res.render('view', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
+									doctype : "text"});
 					
 				});
 				
 				//console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
-			
+		}
 	});
     
     // Use the router routes in our application

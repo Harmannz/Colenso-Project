@@ -72,6 +72,39 @@ function Database() {
 			assert.equal(err, null);			
 			callback(result.result);
 		});
+	},
+	
+	this.getFileRaw = function(collection, callback){
+		// create query instance
+		
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
+					'for $item in collection("' + this.db + '/' + collection + '") ' +
+					'let $title := $item/TEI/teiHeader/fileDesc/titleStmt//title/text() ' +
+					'let $path := db:path($item) ' +
+					'return <result><path>{$path}</path>{$item}</result>';
+		var query = this.session.query(input);
+		query.execute(function (err, result) {
+			assert.equal(err, null);
+			console.log(result.result);
+			callback(result.result);
+		});
+	}
+	
+	this.textSearch = function(query, callback){
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") where $doc/TEI//body//text() contains text '+query+
+					' let $path := db:path($doc) ' +
+					'let $title := $doc/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
+					'let $author := $doc/TEI/teiHeader//titleStmt//author//text() ' +
+					'return <link><path>{$path}</path><title>{$title}</title><author>{$author}</author></link>';
+		
+		console.log(input);
+		var query = this.session.query(input);
+		query.execute(function (err, result) {
+			assert.equal(err, null);
+			console.log(result.result);
+			callback(result.result);
+		});			
+					
 	}
 	
 }
