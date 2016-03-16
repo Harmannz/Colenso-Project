@@ -1,6 +1,14 @@
 #search{
 	padding:80px 0px;
 }
+
+#breadcrumbs{
+	padding-top:80px;
+}
+
+#data{
+	padding:20px 0px;
+}
 #search-button{
 	background-color : #91a23c;
 	color:#fff;
@@ -11,11 +19,9 @@
 	border-color:#333;
 }
 @media (min-width:768px){
-#search{padding:100px 0px}
+#search{padding-top:100px}
 #breadcrumbs{padding-top:100px}
+#data{padding:40px 0px;}
 }
 
 
-#breadcrumbs{
-	padding-top:80px;
-}

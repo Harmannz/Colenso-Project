@@ -42,7 +42,7 @@
     {% include "includes/header.html" %}
 	
         <!-- Services Section -->
-    <div id="search">
+    <div id="breadcrumbs">
 	<div class="container">
         {% if not hideBreadcrumb %}
 			<div class="row">
@@ -58,7 +58,7 @@
 		</div>
 	</div>
 			
-	<section id="viewfile">
+	<section id="data">
 	
         <div class="container">		
 			{% endif %}
@@ -66,9 +66,17 @@
 				<div class="col-lg-12 text-center">
 					<h2 class="section-heading">{{title}}</h2>
 					{% if front %}
-						<h3 class="section-subheading text-muted">{{front}}</h3>
+						<h3 class="section-subheading text-muted" style="margin-bottom:0px;">{{front}}</h3>
 					{% endif %}
-					<div class="" >{{body}}</div>
+					
+					<ul class="nav nav-tabs">
+						
+						<li role="presentation" {% if doctype | is_text %} class="active" {% endif %}><a href="?doctype=text">Text</a></li>
+						<li role="presentation" {% if doctype | is_raw %} class="active" {% endif %}><a href="?doctype=raw">Raw</a></li>
+					</ul>
+					<div class="well">
+						{{body}}
+					</div>
 				</div>
             </div>
         </div>
@@ -87,15 +95,6 @@
 	<script type="text/javascript" src="/static/DataTables-1.10.11/js/jquery.dataTables.min.js"></script>
 	<script type="text/javascript" src="/static/DataTables-1.10.11/js/dataTables.bootstrap.min.js"></script>
 	
-	<script>
-	$(document).ready(function() {
-		$('#example-table').DataTable({
-			"bFilter": false,
-    	    "bInfo": false,
-    	    "dom": 'rt<"bottom"flp>'
-		});
-	} );
-	</script>
 </body>
 
 </html>
