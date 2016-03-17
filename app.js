@@ -82,6 +82,7 @@ env.addFilter("date", nunjucksDate);
 		
 		var searchtype = req.query.searchtype;
 		var query = req.query.q;
+		console.log("query: " + query);
 		if (searchtype == "text" && query){
 			
 		database.loadStructure(function(rootNode){
@@ -97,7 +98,6 @@ env.addFilter("date", nunjucksDate);
 					var author = $(elem).find('author').text();
 					links.push({"path" : path, "title" : title, "type" : type, "author" : author});
 				});
-				console.log(links);
 			
 				res.render('explore', {categories : rootNode.children,
 					tableHeader : ["Author","Type","Title"],
@@ -108,6 +108,30 @@ env.addFilter("date", nunjucksDate);
 			});
 		});
 		
+		} else if (searchtype == "markup" && query) {
+			
+			database.loadStructure(function(rootNode){
+				database.markupSearch(query, function(result){
+					
+					var $ = cheerio.load(result, { xmlMode: true });
+					var links = [];
+					$('link').each(function(i, elem){
+						
+						var path = $(elem).find('path').text();
+						var title = $(elem).find('title').text();
+						var type = path.split('/')[1];
+						var author = $(elem).find('author').text();
+						links.push({"path" : path, "title" : title, "type" : type, "author" : author});
+					});
+					
+					res.render('explore', {categories : rootNode.children,
+						tableHeader : ["Author","Type","Title"],
+						"links" : links,
+						"query" : query
+						});
+					
+				});
+			});
 		}else{
 		database.loadStructure(function(rootNode){
 			database.getFileInfo("", function(result){
