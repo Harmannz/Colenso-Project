@@ -25,3 +25,14 @@
 }
 
 
+.pagination > .active > a{
+	background-color: #91A23C;
+	border-color:#91A23C;
+}
+
+.pagination > li > a, .pagination >li > span  {
+	color:#555;
+}
+.pagination > li > a:hover, .pagination > .active > span, .pagination > li > a:target , .pagination > li > a:focus{
+	color:#91A23C;
+}
