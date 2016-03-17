@@ -9,7 +9,7 @@ function Database() {
 
     this.db = 'colenso';
 	this.session = new basex.Session("localhost", 1984, "admin", "admin");
-	
+	this.session.execute('OPEN colenso');
 	this.loadStructure = function(callback){
 		
 		basex.debug_mode = false;
@@ -100,6 +100,9 @@ function Database() {
 		console.log(input);
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
+			if (!err == null){
+				callback("");
+			}
 			assert.equal(err, null);
 			console.log(result.result);
 			callback(result.result);
@@ -108,15 +111,16 @@ function Database() {
 	},
 	
 	this.markupSearch = function(query, callback){
-		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in '+ query +
-					' let $xml:=collection(concat("colenso/", db:path($item)))' +
-					' let $path := db:path($xml) ' +
-					'let $title := $xml/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
-					'let $author := $xml/TEI/teiHeader//titleStmt//author//text() ' +
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in /TEI//table'+ 
+					' let $path := db:path(root($item)) ' +
+					'let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
+					'let $author := root($item)/TEI/teiHeader//titleStmt//author//text() ' +
 					'return <link><path>{$path}</path><title>{$title}</title><author>{$author}</author></link>';
-					
+
+
 //		declare default element namespace "http://www.tei-c.org/ns/1.0";  for $item in /TEI let $xml := collection("colenso/" || db:path) let $path:=db:path($xml)  
 		//declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") for $item in db:path($doc) return $item
+		
 		console.log(input);
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
@@ -124,6 +128,24 @@ function Database() {
 			console.log(result.result);
 			callback(result.result);
 		});			
+		
+		/*
+		
+		this.session.execute("XQUERY " + input, function(error, result){
+			assert.equal(error, null);
+			console.log(result);
+			callback(result.result);			
+		})
+		
+		
+		declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in /TEI/text  
+		let $path := db:path(root($item)) 
+		let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text()
+
+		let $author := root($item)/TEI/teiHeader//titleStmt//author//text() 
+		return <result><path>{$path}</path><title>{$title}</title><author>{$author}</author></result>
+		*/			
+					
 					
 	}
 	
