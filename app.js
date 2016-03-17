@@ -107,6 +107,7 @@ env.addFilter("date", nunjucksDate);
 				
 			});
 		});
+		
 		}else{
 		database.loadStructure(function(rootNode){
 			database.getFileInfo("", function(result){
@@ -220,7 +221,7 @@ env.addFilter("date", nunjucksDate);
 				var path = $('result').find('path').text().split("/");
 				var title = $('result').find('title').text();
 				var front = $('result').find('front').text();
-				var body = $('result').find('body').text();
+				var body = $('result').find('body');
 				console.log(body);
 				
 				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
