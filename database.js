@@ -81,7 +81,7 @@ function Database() {
 					'for $item in collection("' + this.db + '/' + collection + '") ' +
 					'let $title := $item/TEI/teiHeader/fileDesc/titleStmt//title/text() ' +
 					'let $path := db:path($item) ' +
-					'return <result><path>{$path}</path>{$item}</result>';
+					'return <result><path>{$path}</path><xml>{$item}</xml></result>';
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
 			assert.equal(err, null);
@@ -111,7 +111,7 @@ function Database() {
 	},
 	
 	this.markupSearch = function(query, callback){
-		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in /TEI//table'+ 
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in '+ query +
 					' let $path := db:path(root($item)) ' +
 					'let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
 					'let $author := root($item)/TEI/teiHeader//titleStmt//author//text() ' +

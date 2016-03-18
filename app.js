@@ -228,7 +228,7 @@ env.addFilter("date", nunjucksDate);
 				var path = $('result').find('path').text().split("/");
 				var title = $('result').find('title').text();
 				var front = $('result').find('front').text();
-				var body = $('result').find('TEI').html();
+				var body = $('result').find('xml').html();
 				
 				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
 				
