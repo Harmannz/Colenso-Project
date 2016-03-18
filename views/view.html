@@ -75,7 +75,7 @@
 					<ul class="nav nav-tabs">
 						
 						<li role="presentation" {% if doctype | is_text %} class="active" {% endif %}><a href="?doctype=text">Text</a></li>
-						<li role="presentation" {% if doctype | is_raw %} class="active" {% endif %}><a href="?doctype=raw">Raw</a></li>
+						<li role="presentation" {% if doctype | is_raw %} class="active" {% endif %} ><a href="?doctype=raw" target="_blank">Raw</a></li>
 					</ul>
 					<div class="well">
 						{{body}}

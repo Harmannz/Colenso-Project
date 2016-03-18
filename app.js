@@ -228,12 +228,12 @@ env.addFilter("date", nunjucksDate);
 				var path = $('result').find('path').text().split("/");
 				var title = $('result').find('title').text();
 				var front = $('result').find('front').text();
-				var body = $('result').find('xml').html();
+				var bodyy = $('result').find('xml').html();
 				
 				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
+				res.set('Content-Type','text/xml');
 				
-				res.render('view', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
-									doctype : "raw"});
+				res.send(bodyy);
 					
 				});
 			}
