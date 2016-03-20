@@ -32,7 +32,9 @@ var express = require('express'),
 	Database = require('./database').Database,
 	cheerio = require('cheerio'),
 	multer = require('multer'),
-	upload = multer({dest:'./uploads/'});
+	upload = multer({dest:'./uploads/'}),
+	fs = require('fs'),
+	log = require('./debug');
 
 
 // Set up express
@@ -148,7 +150,7 @@ env.addFilter("date", nunjucksDate);
 					var author = $(elem).find('author').text();
 					links.push({"path" : path, "title" : title, "type" : type, "author" : author});
 				});
-				console.log(links);
+				
 			
 				res.render('explore', {categories : rootNode.children,
 					tableHeader : ["Author","Type","Title"],
@@ -213,12 +215,57 @@ env.addFilter("date", nunjucksDate);
 	
 	router.get("/explore/:author/:filetype/:filename", function(req, res){
 		"use strict";
-		var maxChar = 25;
 		var author = req.params.author;
 		var filetype = req.params.filetype;
 		var filename = req.params.filename;
 		var doctype = req.query.doctype;
-		console.log(doctype);
+
+		viewFile(author, filetype, filename, doctype, res);
+	});
+    app.get("/contribute", function(req, res){
+		database.loadStructure(function(rootNode){
+			res.render('contribute', {authors : rootNode.children, categories : ['diary', 'newspaper_letters', 'private_letters']});
+		});
+	});
+	app.post("/upload",upload.single('file'), function(req,res,next){
+		console.log(req.body);
+		console.log(req.file);
+		var author = req.body.author ? req.body.author : req.body['author-selection']
+		var category = req.body.category ? req.body.category : req.body['category-selection']
+		var path = "/"+author + "/"+category + "/" + req.file.originalname;
+		var s=fs.createReadStream(__dirname+ "/" + req.file.path);
+		
+		
+		
+		database.addFile(path, s, function(result){
+			console.log(result);
+			if (result.ok){
+				viewFile(author, category, req.file.originalname, "text", res);
+			}else{
+				//res.render("contribute-result", {result:result});
+				res.render("error", {err : {message : "Could not upload. Make sure xml file is TEI format and does not already exist!"}});
+			}
+		});
+		
+		
+		
+		
+	});
+	
+    // Use the router routes in our application
+    app.use('/', router);
+
+    // Start the server listening
+    var server = app.listen(3000, function() {
+        var port = server.address().port;
+        console.log('Colenso Project listening on port %s.', port);
+    });
+	
+	
+var viewFile = function(author, filetype, filename, doctype, res){
+	
+	
+	var maxChar = 25;
 		if (!(doctype == "raw" || doctype == "text" )){
 			doctype = "text";
 		}
@@ -235,7 +282,7 @@ env.addFilter("date", nunjucksDate);
 				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
 				res.set('Content-Type','text/xml');
 				
-				res.send(bodyy);
+				res.send(body);
 					
 				});
 			}
@@ -248,7 +295,7 @@ env.addFilter("date", nunjucksDate);
 				var title = $('result').find('title').text();
 				var front = $('result').find('front').text();
 				var body = $('result').find('body');
-				console.log(body);
+				
 				
 				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
 				
@@ -259,24 +306,4 @@ env.addFilter("date", nunjucksDate);
 				
 				//console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
 		}
-	});
-    app.get("/contribute", function(req, res){
-		database.loadStructure(function(rootNode){
-			res.render('contribute', {authors : rootNode.children, categories : ['diary', 'newspaper_letters', 'private_letters']});
-		});
-	});
-	app.post("/upload",upload.single('file'), function(req,res,next){
-		console.log(req.body);
-		console.log(req.file);
-		res.status(204).end();
-		
-	});
-	
-    // Use the router routes in our application
-    app.use('/', router);
-
-    // Start the server listening
-    var server = app.listen(3000, function() {
-        var port = server.address().port;
-        console.log('Colenso Project listening on port %s.', port);
-    });
+}

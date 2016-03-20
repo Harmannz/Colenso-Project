@@ -1,16 +1,19 @@
 
 var basex  = require("basex"),
 	convertToHierarchy = require("./data/navigation").convertToHierarchy,
-	assert = require('assert');
+	assert = require('assert'),
+	log = require('./debug');
 
 
 function Database() {
     "use strict";
 
     this.db = 'colenso';
-	this.session = new basex.Session("localhost", 1984, "admin", "admin");
-	this.session.execute('OPEN colenso');
+	this.session;// = new basex.Session("localhost", 1984, "admin", "admin");
+	//this.session.execute('OPEN colenso');
 	this.loadStructure = function(callback){
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
 		
 		basex.debug_mode = false;
 		
@@ -33,18 +36,18 @@ function Database() {
 			callback(rootNode);
 		});
 
-		/*
+		
 		// close query instance
 		query.close();
 
 		// close session
-		session.close();
-		*/
+		this.session.close();
 	},
 	
 	this.getFileInfo = function(collection, callback){
 		// create query instance
-		
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
 					'<result>{for $item in collection("' + this.db + '/' + collection + '")/TEI/teiHeader ' +
 					'let $path := db:path($item) ' +
@@ -57,9 +60,16 @@ function Database() {
 			
 			callback(result.result);
 		});
+		// close query instance
+		query.close();
+
+		// close session
+		this.session.close();
 	},
 	
 	this.getFile = function(collection, callback){
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
 		// create query instance
 		
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
@@ -72,10 +82,18 @@ function Database() {
 			assert.equal(err, null);			
 			callback(result.result);
 		});
+		// close query instance
+		query.close();
+		
+		// close session
+		this.session.close();
 	},
 	
 	this.getFileRaw = function(collection, callback){
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
 		// create query instance
+		
 		
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
 					'for $item in collection("' + this.db + '/' + collection + '") ' +
@@ -88,16 +106,24 @@ function Database() {
 			console.log(result.result);
 			callback(result.result);
 		});
+		// close query instance
+		query.close();
+		
+		// close session
+		this.session.close();
 	},
 	
 	this.textSearch = function(query, callback){
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
+		
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") where $doc/TEI//body//text() contains text '+query+
 					' let $path := db:path($doc) ' +
 					'let $title := $doc/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
 					'let $author := $doc/TEI/teiHeader//titleStmt//author//text() ' +
 					'return <link><path>{$path}</path><title>{$title}</title><author>{$author}</author></link>';
 		
-		console.log(input);
+
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
 			if (!err == null){
@@ -108,9 +134,19 @@ function Database() {
 			callback(result.result);
 		});			
 					
+		// close query instance
+		query.close();
+
+
+		// close session
+		this.session.close();
 	},
 	
 	this.markupSearch = function(query, callback){
+
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
+		
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in '+ query +
 					' let $path := db:path(root($item)) ' +
 					'let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
@@ -121,7 +157,7 @@ function Database() {
 //		declare default element namespace "http://www.tei-c.org/ns/1.0";  for $item in /TEI let $xml := collection("colenso/" || db:path) let $path:=db:path($xml)  
 		//declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") for $item in db:path($doc) return $item
 		
-		console.log(input);
+
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
 			assert.equal(err, null);
@@ -146,7 +182,36 @@ function Database() {
 		return <result><path>{$path}</path><title>{$title}</title><author>{$author}</author></result>
 		*/			
 					
-					
+		// close query instance
+		query.close();
+
+		// close session
+		this.session.close();
+	}
+	
+	this.addFile = function(path, target, callback){
+
+		
+		this.getFile(path, function(result){
+			console.log(result);
+			if(!result){
+				var session = new basex.Session("localhost", 1984, "admin", "admin");
+				session.execute('OPEN colenso');
+				session.add(path, target, function(err, result){
+					console.log(result);
+					callback(result); //result.ok may be true or false
+				});
+				session.close();
+			}
+			else{
+				callback("Error");
+			}
+			
+		});
+		// close session
+
+		
+		//return "Testing";
 	}
 	
 }
