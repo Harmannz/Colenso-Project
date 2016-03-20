@@ -2,12 +2,12 @@
 	padding:80px 0px;
 }
 
-#breadcrumbs{
+#breadcrumbs, #contribute{
 	padding-top:80px;
 }
 
 #data{
-	padding:20px 0px;
+	padding:80px 0px;
 }
 #search-button{
 	background-color : #91a23c;
@@ -20,8 +20,28 @@
 }
 @media (min-width:768px){
 #search{padding-top:100px}
-#breadcrumbs{padding-top:100px}
-#data{padding:40px 0px;}
+#breadcrumbs , #contribute{padding-top:100px}
+#data{padding:100px 0px;}
+}
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
 }
 
 

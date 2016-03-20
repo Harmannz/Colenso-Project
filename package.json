@@ -9,7 +9,8 @@
         "nunjucks": "~2.2.0",
         "nunjucks-date": "~1.2.0",
 		"basex" : "~0.7.0",
-		"cheerio" : "~0.20.0"
+		"cheerio" : "~0.20.0",
+		"multer" : "~1.1.0"
     },
     "author": "Harman Singh",
 	"license": "MIT"

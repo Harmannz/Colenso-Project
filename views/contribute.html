@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="Harman Singh" >
 
-    <title>The Colenso Project</title>
+    <title>The Colenso Project - Contribute</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
@@ -19,10 +19,6 @@
 	
 	<!-- Custom CSS -->
     <link href="/static/css/style.css" rel="stylesheet">
-	
-	<!-- XML CSS -->
-    <link href="/static/css/xml.css" rel="stylesheet">
-	
 	
     <!-- Custom Fonts -->
     <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
@@ -42,24 +38,6 @@
 <body id="page-top" class="index">
 
     {% include "includes/header.html" %}
-	
-        <!-- Services Section -->
-    <div id="breadcrumbs">
-	<div class="container">
-        {% if not hideBreadcrumb %}
-			<div class="row">
-			  <div class="col-md-12">
-				<ol class="breadcrumb">
-					<li><a href="/explore">Explore</a></li>
-					<li><a href="/explore/{{breadcrumbs.author}}">{{breadcrumbs.author | replace("_", " ") | capitalize}}</a></li>
-					<li><a href="/explore/{{breadcrumbs.author}}/{{breadcrumbs.type}}">{{breadcrumbs.type | replace("_", " ") | capitalize}}</a></li>
-					<li class="active">{{breadcrumbs.file | replace("_", " ") | capitalize}}</li>
-				</ol>
-			  </div>
-			</div>
-		{% endif %}
-		</div>
-	</div>
 			
 	<section id="data">
 	
@@ -67,20 +45,36 @@
 			
             <div class="row">
 				<div class="col-lg-12 text-center">
-					<h2 class="section-heading">{{title}}</h2>
-					{% if front %}
-						<h3 class="section-subheading text-muted" style="margin-bottom:0px;">{{front}}</h3>
-					{% endif %}
+					<h2 class="section-heading">Add XML Document</h2>
 				</div>
-				<div class="col-lg-12">	
-					<ul class="nav nav-tabs">
-						
-						<li role="presentation" {% if doctype | is_text %} class="active" {% endif %}><a href="?doctype=text">Text</a></li>
-						<li role="presentation" {% if doctype | is_raw %} class="active" {% endif %} ><a href="?doctype=raw" download target="_blank">Raw</a></li>
-					</ul>
-					<div class="well">
-						{{body}}
+				<div class="col-md-6 col-md-offset-3 well">
+				<form action="/upload" method="post" enctype="multipart/form-data">
+					<div class="form-group">
+						<label for="author">Author:</label>
+						<input class="form-control" id="author" name="author" placeholder="Enter author">
+					<p for="author-select">Or (select one):</p>
+					  <select class="form-control" id="author-select" name = "author-select">
+						{% for author, children in authors %}
+						<option>{{author}}</option>
+						{% endfor %}
+					  </select>
 					</div>
+					<div class="form-group">
+						<label for="category">Category:</label>
+						<input class="form-control" id="category" name="category" placeholder="Enter category of file">
+						<p for="category-select">Or (select one):</p>
+					  <select class="form-control" id="category-select" name = "category-select">
+						{% for category in categories %}
+						<option>{{category}}</option>
+						{% endfor %}
+					  </select>
+					</div>
+					<div class="form-group">
+						<input type="file" name="file">
+					</div>
+				
+					<button type="submit" class="btn btn-default">Upload</button>
+				</form>
 				</div>
             </div>
         </div>

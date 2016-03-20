@@ -30,7 +30,9 @@ var express = require('express'),
 	basex  = require("basex"),
 	convertToHierarchy = require("./data/navigation").convertToHierarchy,
 	Database = require('./database').Database,
-	cheerio = require('cheerio');
+	cheerio = require('cheerio'),
+	multer = require('multer'),
+	upload = multer({dest:'./uploads/'});
 
 
 // Set up express
@@ -258,7 +260,18 @@ env.addFilter("date", nunjucksDate);
 				//console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
 		}
 	});
-    
+    app.get("/contribute", function(req, res){
+		database.loadStructure(function(rootNode){
+			res.render('contribute', {authors : rootNode.children, categories : ['diary', 'newspaper_letters', 'private_letters']});
+		});
+	});
+	app.post("/upload",upload.single('file'), function(req,res,next){
+		console.log(req.body);
+		console.log(req.file);
+		res.status(204).end();
+		
+	});
+	
     // Use the router routes in our application
     app.use('/', router);
 
