@@ -277,7 +277,7 @@ var viewFile = function(author, filetype, filename, doctype, res){
 				var path = $('result').find('path').text().split("/");
 				var title = $('result').find('title').text();
 				var front = $('result').find('front').text();
-				var bodyy = $('result').find('xml').html();
+				var body = $('result').find('xml').html();
 				
 				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
 				res.set('Content-Type','text/xml');
