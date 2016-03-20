@@ -49,6 +49,7 @@ function Database() {
 		// create query instance
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
+		console.log(collection);
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
 					'<result>{for $item in collection("' + this.db + '/' + collection + '")/TEI/teiHeader ' +
 					'let $path := db:path($item) ' +
@@ -113,7 +114,51 @@ function Database() {
 		// close session
 		this.session.close();
 	},
-	
+	this.getFileRawToEdit = function(collection, callback){
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
+		// create query instance
+		
+		
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
+					'for $item in collection("' + this.db + '/' + collection + '") ' +
+					'return $item';
+		var query = this.session.query(input);
+		query.execute(function (err, result) {
+			assert.equal(err, null);
+			console.log(result.result);
+			callback(result.result);
+		});
+		// close query instance
+		query.close();
+		
+		// close session
+		this.session.close();
+	},
+	this.getFileRawData = function(collection, callback){
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
+		// create query instance
+		
+		
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
+					'for $item in collection("' + this.db + '/' + collection + '") ' +
+					'let $title := $item/TEI/teiHeader/fileDesc/titleStmt//title/text() ' +
+					'let $path := db:path($item) ' +
+					'return <result><path>{$path}</path><xml>{$item}</xml></result>';
+		var query = this.session.query(input);
+		query.execute(function (err, result) {
+			assert.equal(err, null);
+			console.log(result.result);
+			callback(result.result);
+		});
+		// close query instance
+		query.close();
+		
+		// close session
+		this.session.close();
+		
+	},
 	this.textSearch = function(query, callback){
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');

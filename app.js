@@ -182,6 +182,7 @@ env.addFilter("date", nunjucksDate);
 					var type = path.split('/')[1];
 					links.push({"path" : path, "title" : title, "type" : type});
 				});
+				console.log(links);
 		
 				res.render('explore', {isHomePage: false, categories : author ? rootNode.children[author].children : rootNode.children,
 				tableHeader : ["Type","Title"],
@@ -317,19 +318,23 @@ var viewFile = function(author, filetype, filename, doctype, res){
 				});
 		} else if (doctype == "edit"){
 			
-			database.getFileRaw(author+"/"+filetype+"/"+filename, function(result){
-				var $ = cheerio.load(result, { xmlMode: true });
-				var filepath = $('result').find('path').text();
-				var path = $('result').find('path').text().split("/");
-				var title = $('result').find('title').text();
-				var front = $('result').find('front').text();
-				var body = $('result').find('xml').html();
-				
-				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
-				console.log("filepath: " + filepath);
-				console.log("body: " + body);
-				res.render('edit', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
-									doctype : "edit", filepath : filepath});
+			database.getFileRawToEdit(author+"/"+filetype+"/"+filename, function(xml){
+				var $ = cheerio.load(xml, { xmlMode: true });
+				var body = $.html();
+				database.getFileRawData(author+"/"+filetype+"/"+filename, function(result){
+					var $ = cheerio.load(result, { xmlMode: true });					
+					var filepath = $('result').find('path').text();
+					var path = $('result').find('path').text().split("/");
+					var title = $('result').find('title').text();
+					var front = $('result').find('front').text();					
+					
+					var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
+					console.log("filepath: " + filepath);
+					console.log("body: " + body);
+					res.render('edit', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
+									doctype : "edit", filepath : filepath});	
+				});
+	
 			});
 		}
 		 else {
