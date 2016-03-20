@@ -2,7 +2,8 @@
 var basex  = require("basex"),
 	convertToHierarchy = require("./data/navigation").convertToHierarchy,
 	assert = require('assert'),
-	log = require('./debug');
+	log = require('./debug'),
+	Readable = require('stream').Readable;
 
 
 function Database() {
@@ -187,7 +188,7 @@ function Database() {
 
 		// close session
 		this.session.close();
-	}
+	},
 	
 	this.addFile = function(path, target, callback){
 
@@ -212,8 +213,24 @@ function Database() {
 
 		
 		//return "Testing";
-	}
+	},
 	
+	this.updateFile = function(path, inputStream, callback){
+		var session = new basex.Session("localhost", 1984, "admin", "admin");
+		session.execute('OPEN colenso');
+		var s = new Readable;
+		s.push(inputStream);
+		s.push(null);
+		session.replace(path, s, function(err, result){
+			console.log("-----\n");
+			console.log(result);
+			console.log(path);
+			console.log("------");
+			callback(result); //result.ok may be true or false
+		});
+		session.close();
+		
+	}
 }
 
 
