@@ -262,7 +262,14 @@ env.addFilter("date", nunjucksDate);
 		console.log("EDIT POST -------");
 		console.log(req.body.filepath);
 		console.log(req.body.updatedfile);
-		
+		/*
+		TODO: 
+			xsd validate with schema
+			Look at grunt xml to validate xml or basex 
+			Look at zip.js
+			Look at nested search
+			
+		*/
 		
 		database.updateFile(req.body.filepath, req.body.updatedfile, function(result){
 			console.log(result);
