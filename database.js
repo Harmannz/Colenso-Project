@@ -193,7 +193,7 @@ function Database() {
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
 		
-		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in '+ query 
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in '+ query +
 					' let $path := db:path(root($item)) ' +
 					'let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
 					'let $author := root($item)/TEI/teiHeader//titleStmt//author//text() ' +
