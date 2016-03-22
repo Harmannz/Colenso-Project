@@ -34,7 +34,8 @@ var express = require('express'),
 	multer = require('multer'),
 	upload = multer({dest:'./uploads/'}),
 	fs = require('fs'),
-	log = require('./debug');
+	log = require('./debug'),
+	var session = require('express-session');
 
 
 // Set up express
@@ -43,6 +44,7 @@ app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
 app.use('/static', express.static(__dirname + '/static'));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({secret: 'ssshhhhh'}));
 
 
 /*
@@ -69,7 +71,8 @@ env.addFilter('is_edit', function(str) {
   return str == 'edit';
 });
 
-
+//Global searchhistory
+var searchhistory = [];
 
 var nunjucksDate = require('nunjucks-date');
 nunjucksDate.setDefaultFormat('MMMM Do YYYY, h:mm:ss a');
@@ -87,9 +90,30 @@ env.addFilter("date", nunjucksDate);
     // Explore
     router.get("/explore", function(req, res) {
         "use strict";
+		/*
+		if nestedsearch 
+		1. maintain a collection of previous {search : query, searchtype : searchtype} 
+		2. a. when nested search is pressed, perform query using nested path
+		2. a. 1. recursive function in database that 
+		2. b. when normal search is pressed, clear the previous search history
 		
+		*/
+		console.log("nestedsearch: " + req.query.nestedsearch); 
 		var searchtype = req.query.searchtype;
 		var query = req.query.q;
+		
+		
+		if (req.query.nestedsearch){
+			if (req.query.searchtype && req.query.q){
+				searchhistory.push({searchtype : searchtype, searchstring : query})
+				
+			}
+		}else {
+			searchhistory = [];
+		}
+		
+		console.log(searchhistory);
+		
 		console.log("query: " + query);
 		if (searchtype == "text" && query){
 			
@@ -182,7 +206,7 @@ env.addFilter("date", nunjucksDate);
 					var type = path.split('/')[1];
 					links.push({"path" : path, "title" : title, "type" : type});
 				});
-				console.log(links);
+				//console.log(links);
 		
 				res.render('explore', {isHomePage: false, categories : author ? rootNode.children[author].children : rootNode.children,
 				tableHeader : ["Type","Title"],
@@ -208,7 +232,7 @@ env.addFilter("date", nunjucksDate);
 					var title = $(elem).find('title').text();
 					links.push({"path" : path, "title" : title});
 				});
-				console.log(links);
+				//console.log(links);
 				
 				res.render('explore', {isHomePage: false,
 					tableHeader : ["Title"],

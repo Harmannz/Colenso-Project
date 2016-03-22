@@ -79,15 +79,17 @@
 					<form class="form" action="/explore" id="search-form">
 						<div class="input-group">
 							<input type="hidden" name="searchtype" value="text" id="searchtype"/>
-							
 							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder="Search... " {% else %} value ="{{query}}" {% endif %} >
 							
 							<span class="input-group-btn">
 								<button class="btn btn-default" type="button" onclick="textsearchbuttonHandled(event);" id="search-button">Text Search</button>
 								<button class="btn btn-default" type="button" onclick="markupsearchbuttonHandled(event);" id="search-button">Markup Search</button>>
 							</span>
-						</div><!-- /input-group -->
-							
+						</div>
+						<!-- /input-group -->
+						<div class="checkbox pull-right">
+  							<label><input type="checkbox" name="nestedsearch">Nested Search</label>
+						</div>
 					</form>
 					
 					{% if query %}

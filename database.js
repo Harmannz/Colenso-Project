@@ -176,7 +176,7 @@ function Database() {
 				callback("");
 			}
 			assert.equal(err, null);
-			console.log(result.result);
+			//console.log(result.result);
 			callback(result.result);
 		});			
 					
@@ -207,7 +207,7 @@ function Database() {
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
 			assert.equal(err, null);
-			console.log(result.result);
+			//console.log(result.result);
 			callback(result.result);
 		});			
 		
