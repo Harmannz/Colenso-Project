@@ -86,15 +86,17 @@
 								<button class="btn btn-default" type="button" onclick="markupsearchbuttonHandled(event);" id="search-button">Markup Search</button>>
 							</span>
 						</div>
+						
+					{% if query %}
+						<p class="text-muted pull-left">Showing results for {{query}}</p>
+					{% endif %}
 						<!-- /input-group -->
-						<div class="checkbox pull-right">
-  							<label><input type="checkbox" name="nestedsearch">Nested Search</label>
+
+						<div class="checkbox pull-right" style="margin-top:2px;">
+  							<label><input type="checkbox" name="nestedsearch">Check to perform nested search</label>
 						</div>
 					</form>
 					
-					{% if query %}
-						<p class="text-muted">Showing results for {{query}}</p>
-					{% endif %}
 					
 					<table id="example-table" class="table table-striped table-bordered table-responsive">
 						<thead>

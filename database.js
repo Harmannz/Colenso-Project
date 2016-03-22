@@ -275,6 +275,41 @@ function Database() {
 		});
 		session.close();
 		
+	},
+	
+	this.nestedSearch = function(searchhistory, callback){
+		//searchhistory = [{searchtype : markup || text, searchstring : ""}]
+		//first create search based on array of searches
+		//then perform the query
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
+		var input = "collection('colenso')";
+		for(var i = 0; i < searchhistory.length; i++){
+			input = this.prepareNestedQuery(input, searchhistory[i]);
+		}
+		
+		var query = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in ( '+ input + ' ) ' +
+					' let $path := db:path(root($item)) ' +
+					'let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
+					'let $author := root($item)/TEI/teiHeader//titleStmt//author//text() ' +
+					'return <link><path>{$path}</path><title>{$title}</title><author>{$author}</author></link>';
+					
+		console.log(query);
+		var query = this.session.query(query);
+		query.execute(function (err, result) {
+			assert.equal(err, null);
+			//console.log(result.result);
+			callback(result.result);
+		});			
+	},
+	
+	this.prepareNestedQuery = function(nestedquery, query){
+		if (query.searchtype == "text"){
+			return 'for $doc in ( '+ nestedquery+' ) where $doc/TEI//body//text() contains text '+query.searchstring + ' return $doc';
+		}
+		else if (query.searchtype == "markup"){
+			return 'for $doc in ( '+ nestedquery+' ) where $doc '+ query.searchstring+' return $doc'
+		}
 	}
 }
 
