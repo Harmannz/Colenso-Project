@@ -34,6 +34,7 @@ var express = require('express'),
 	cheerio = require('cheerio'),
 	multer = require('multer'),
 	upload = multer({dest:'./uploads/'}),
+	archiver = require('archiver'),
 	fs = require('fs'),
 	log = require('./debug'),
 	session = require('express-session');
@@ -73,6 +74,7 @@ env.addFilter('is_edit', function(str) {
 });
 
 
+
 var nunjucksDate = require('nunjucks-date');
 nunjucksDate.setDefaultFormat('MMMM Do YYYY, h:mm:ss a');
 env.addFilter("date", nunjucksDate);
@@ -100,6 +102,7 @@ env.addFilter("date", nunjucksDate);
 
 		var searchtype = req.query.searchtype;
 		var query = req.query.q;
+		var downloadZip = req.query.download == "download";
 		var searchhistory = {searchtype : searchtype, searchstring : query};
 		
 		if (req.query.nestedsearch && req.query.searchtype && req.query.q){
@@ -115,7 +118,7 @@ env.addFilter("date", nunjucksDate);
 		console.log("query: " + query);
 		//if nested search then 
 		
-		searchandexplore(searchtype, query, req.session.searchhistory, req.query.nestedsearch,res);
+		searchandexplore(searchtype, query, req.session.searchhistory, req.query.nestedsearch, downloadZip, res);
     });
     
 	router.get("/explore/:author", function(req, res){
@@ -319,7 +322,7 @@ var viewFile = function(author, filetype, filename, doctype, res){
 		}
 }
 
-searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, res){
+searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, downloadZip, res){
 	
 	if (isnestedsearch && searchhistory && searchhistory.length >= 1){
 		/*
@@ -328,32 +331,83 @@ searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, re
 		send searchhistory to database and that will create the search query
 		
 		then return 
-		if (downlaodzip)
+		if (downloadzip)
 			perform query but get full xml of each file and send content-type :'application/zip'
 		*/
-		database.loadStructure(function(rootNode){
-			database.nestedSearch(searchhistory, function(result){
-				//here the links I will have will be that 
+		if (downloadZip){
+			var zipfilename = "colenso-docs.zip";
+			
+			res.set('Content-Type', 'application/zip');
+			res.set('Content-Disposition', 'attachment; filename=' + zipfilename);
+			var zip = archiver('zip');
+			zip.pipe(res);
+			
+			zip.on('error', function(err) {
+				res.status(500).send({error: err.message});
+			});
+
+			//on stream end we can end the request
+			zip.on('end', function() {
+				console.log('Archive wrote %d bytes', zip.pointer());
+				return res.end();
+			});
+			var paths = [];
+			//get 
+			database.getNestedQueryPaths(searchhistory, function(result){
+				//here the links I will have list of db:paths 
 				var $ = cheerio.load(result, { xmlMode: true });
-				var links = [];
+				
 				$('link').each(function(i, elem){
 					
-					var path = $(elem).find('path').text();
-					var title = $(elem).find('title').text();
-					var type = path.split('/')[1];
-					var author = $(elem).find('author').text();
-					links.push({"path" : path, "title" : title, "type" : type, "author" : author});
+					paths.push($(elem).find('path').text());
+					
 				});
+								
+				//here for each db:path split into author, filetype, filename
+				for (var i = 0; i < paths.length; i++){
+					var patharray = paths[i].split("/");
+					var author = patharray[0];
+					var filetype = patharray[1];
+					var filename = patharray[2];
+					database.getFileRawToEdit(author+"/"+filetype+"/"+filename, function(result){
+						var $ = cheerio.load(result, { xmlMode: true });
+						var body = $.html();
+						zip.append(body, {name : filename})
+						
+					})
+				}
 				
-				res.render('explore', {categories : rootNode.children,
-					tableHeader : ["Author","Type","Title"],
-					"links" : links,
-					"query" : query,
-					"zipdownload" : true,
-					"hidequery" : true
-					});
+				
+				console.log("finished zip append");
+				zip.finalize();
+				console.log("finished zip finalize");
 			})
-		})
+
+		}else{
+			database.loadStructure(function(rootNode){
+				database.nestedSearch(searchhistory, function(result){
+					//here the links I will have will be that 
+					var $ = cheerio.load(result, { xmlMode: true });
+					var links = [];
+					$('link').each(function(i, elem){
+						
+						var path = $(elem).find('path').text();
+						var title = $(elem).find('title').text();
+						var type = path.split('/')[1];
+						var author = $(elem).find('author').text();
+						links.push({"path" : path, "title" : title, "type" : type, "author" : author});
+					});
+					
+					res.render('explore', {categories : rootNode.children,
+						tableHeader : ["Author","Type","Title"],
+						"links" : links,
+						"query" : query,
+						"zipdownload" : true,
+						"hidequery" : true
+						});
+				});
+			});
+		}
 	}
 	else if (searchtype == "text" && query){
 			

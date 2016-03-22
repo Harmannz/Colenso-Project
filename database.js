@@ -302,7 +302,27 @@ function Database() {
 			callback(result.result);
 		});			
 	},
-	
+	this.getNestedQueryPaths = function(searchhistory, callback){
+		
+		this.session = new basex.Session("localhost", 1984, "admin", "admin");
+		this.session.execute('OPEN colenso');
+		var input = "collection('colenso')";
+		for(var i = 0; i < searchhistory.length; i++){
+			input = this.prepareNestedQuery(input, searchhistory[i]);
+		}
+		
+		var query = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in ( '+ input + ' ) ' +
+					' let $path := db:path(root($item)) ' +
+					'return <link><path>{$path}</path></link>';
+					
+		console.log(query);
+		var query = this.session.query(query);
+		query.execute(function (err, result) {
+			assert.equal(err, null);
+			//console.log(result.result);
+			callback(result.result);
+		});		
+	},
 	this.prepareNestedQuery = function(nestedquery, query){
 		if (query.searchtype == "text"){
 			return 'for $doc in ( '+ nestedquery+' ) where $doc/TEI//body//text() contains text '+query.searchstring + ' return $doc';
