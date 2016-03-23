@@ -163,7 +163,7 @@ function Database() {
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
 		
-		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") where $doc/TEI//body//text() contains text '+query+
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") where $doc//text() contains text '+query+
 					' let $path := db:path($doc) ' +
 					'let $title := $doc/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
 					'let $author := $doc/TEI/teiHeader//titleStmt//author//text() ' +
@@ -325,7 +325,7 @@ function Database() {
 	},
 	this.prepareNestedQuery = function(nestedquery, query){
 		if (query.searchtype == "text"){
-			return 'for $doc in ( '+ nestedquery+' ) where $doc/TEI//body//text() contains text '+query.searchstring + ' return $doc';
+			return 'for $doc in ( '+ nestedquery+' ) where $doc//text() contains text '+query.searchstring + ' return $doc';
 		}
 		else if (query.searchtype == "markup"){
 			return 'for $doc in ( '+ nestedquery+' ) where $doc '+ query.searchstring+' return $doc'
