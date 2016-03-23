@@ -1,0 +1,8 @@
+<ul class="nav nav-tabs">
+						
+	<li role="presentation" {% if doctype | is_text %} class="active" {% endif %}><a href="/explore/{{filepath}}?doctype=text">Text</a></li>
+	{% if filepath %}
+	<li role="presentation" {% if doctype | is_edit %} class="active" {% endif %}><a href="/explore/{{filepath}}?doctype=edit">Edit</a></li>
+	{% endif %}
+	<li role="presentation" {% if doctype | is_raw %} class="active" {% endif %} ><a href="/explore/{{filepath}}?doctype=raw" download target="_blank">Raw</a></li>
+</ul>

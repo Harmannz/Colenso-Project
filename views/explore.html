@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Harman Singh" >
+
+    <title>The Colenso Project</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/static/css/agency.css" rel="stylesheet">
+	
+	<!-- Custom CSS -->
+    <link href="/static/css/style.css" rel="stylesheet">
+	<!-- Datatables CSS -->
+	<link rel="stylesheet" type="text/css" href="/static/DataTables-1.10.11/css/dataTables.bootstrap.min.css"/>
+	
+    <!-- Custom Fonts -->
+    <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body id="page-top" class="index">
+
+    {% include "includes/header.html" %}
+	
+        <!-- Services Section -->
+    <div id="search">
+	
+        <div class="container">
+        {% if not hideBreadcrumb %}
+			<div class="row">
+			  <div class="col-md-12">
+				<ol class="breadcrumb">
+					<li><a href="/explore">Explore</a></li>
+					{% if breadcrumbs.author and not breadcrumbs.type %}
+						<li class="active">{{breadcrumbs.author | replace("_", " ") | capitalize}}</li>
+					{% elif breadcrumbs.type %}
+						<li><a href="/explore/{{breadcrumbs.author}}">{{breadcrumbs.author | replace("_", " ") | capitalize}}</a></li>
+						<li class="active">{{breadcrumbs.type | replace("_", " ") | capitalize}}</li>
+					{% endif %}
+				</ol>
+			  </div>
+			</div>
+			{% endif %}
+            <div class="row">
+				<div class="col-md-3">
+					<div class="list-group">
+						{% for category,value in categories %}
+						<a href="/explore{{value.path}}"
+						   class="list-group-item inactive">
+						  <span class="badge">
+							{{value.count}}
+						  </span>
+						  {{category | replace("_", " ") | capitalize}}
+						</a>
+						{% endfor %}
+					</div>
+				</div>
+				
+                <div class="col-md-9">
+					<form class="form" action="/explore" id="search-form">
+						<div class="input-group">
+							<input type="hidden" name="searchtype" value="text" id="searchtype"/>
+							<input type="hidden" name="download" value="" id="download"/>
+							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder="Search... " {% else %} value ="{{query}}" {% endif %} >
+							
+							<span class="input-group-btn">
+								<button class="btn btn-default" type="button" onclick="textsearchbuttonHandled(event);" id="search-button">Text Search</button>
+								<button class="btn btn-default" type="button" onclick="markupsearchbuttonHandled(event);" id="search-button">Markup Search</button>
+							</span>
+						</div>
+						
+					<div class="row">
+						<div class="col-md-6">
+						{% if query %}
+							<p {% if isNestedQuery %} class="text-muted no-margin pull-left" {% else %} class="text-muted pull-left" {% endif %}>Showing results for {{query}}</p>
+						{% endif %}
+						</div>
+						
+						<div class="col-md-6">
+							<div {% if isNestedQuery %} class="checkbox no-margin pull-right" {% else %} class="checkbox pull-right" {% endif %} style="margin-top:2px;">
+								<label><input type="checkbox" name="nestedsearch" {% if isNestedQuery %} checked {% endif %}>Check to perform nested search</label>
+							</div>
+						</div>
+					</div>
+					
+						
+					{% if isNestedQuery %}
+						<a  class="download-link" href="PleaseEnableJavascript.html" onclick="downloadZipHandled(event);return false;" >Download All?</a>
+					{% endif %}
+						<!-- /input-group -->
+
+						
+					</form>
+					
+					
+					<table id="example-table" class="table table-striped table-bordered table-responsive">
+						<thead>
+							<tr>
+							{% for header in tableHeader %}
+								<th>{{header | capitalize}}</th>
+							{% endfor %}
+							</tr>
+						</thead>
+						<tbody>
+							{% for link in links %}
+							<tr>
+							
+								{% if link.author %}
+									<td>{{link.author}}</td>
+								{% elif link.author == '' %}
+									<td>Unknown Author</td>
+								{% endif %}	
+								
+								{% if link.type %}
+									<td>{{link.type | replace("_", " ") | capitalize}}</td>
+								{% endif %}	
+										
+								<td><a href="/explore/{{link.path}}">{{link.title}}</a></td>
+								
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+                </div>
+				
+            </div>
+        </div>
+    </div>
+
+    
+	{% include "includes/footer.html" %}
+    
+    <!-- Plugin JavaScript -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="/static/js/classie.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/static/js/agency.js"></script>
+	
+	<script type="text/javascript" src="/static/DataTables-1.10.11/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="/static/DataTables-1.10.11/js/dataTables.bootstrap.min.js"></script>
+	
+	<script>
+	$(document).ready(function() {
+		$('#example-table').DataTable({
+			"bFilter": false,
+    	    "bInfo": false,
+    	    "dom": 'rt<"bottom"flp>'
+		});
+	} );
+	
+	function textsearchbuttonHandled(event){
+		document.getElementById("searchtype").value="text";
+		document.getElementById("search-form").submit();	
+	};
+	
+	function markupsearchbuttonHandled(event){
+		document.getElementById("searchtype").value="markup";
+		document.getElementById("search-form").submit();	
+	}
+	
+	function downloadZipHandled(event){
+		document.getElementById("download").value="true";
+		document.getElementById("search-form").submit();	
+	}
+	</script>
+</body>
+
+</html>
