@@ -2,6 +2,7 @@
 	padding:80px 0px;
 }
 
+
 #breadcrumbs, #contribute{
 	padding-top:80px;
 }
@@ -55,4 +56,13 @@
 }
 .pagination > li > a:hover, .pagination > .active > span, .pagination > li > a:target , .pagination > li > a:focus{
 	color:#91A23C;
+}
+.no-margin{
+	margin:0px 0px 0px 0px;
+}
+
+.download-link{
+	margin-top:2px; 
+	float:left; 
+	clear:both;
 }

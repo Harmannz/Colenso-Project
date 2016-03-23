@@ -119,14 +119,14 @@ function Database() {
 		this.session.execute('OPEN colenso');
 		// create query instance
 		
-		
+		console.log(collection);
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
 					'for $item in collection("' + this.db + '/' + collection + '") ' +
 					'return $item';
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
 			assert.equal(err, null);
-			console.log(result.result);
+			//console.log(result.result);
 			callback(result.result);
 		});
 		// close query instance

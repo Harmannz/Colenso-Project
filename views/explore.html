@@ -79,22 +79,36 @@
 					<form class="form" action="/explore" id="search-form">
 						<div class="input-group">
 							<input type="hidden" name="searchtype" value="text" id="searchtype"/>
+							<input type="hidden" name="download" value="" id="download"/>
 							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder="Search... " {% else %} value ="{{query}}" {% endif %} >
 							
 							<span class="input-group-btn">
 								<button class="btn btn-default" type="button" onclick="textsearchbuttonHandled(event);" id="search-button">Text Search</button>
-								<button class="btn btn-default" type="button" onclick="markupsearchbuttonHandled(event);" id="search-button">Markup Search</button>>
+								<button class="btn btn-default" type="button" onclick="markupsearchbuttonHandled(event);" id="search-button">Markup Search</button>
 							</span>
 						</div>
 						
-					{% if query %}
-						<p class="text-muted pull-left">Showing results for {{query}}</p>
+					<div class="row">
+						<div class="col-md-6">
+						{% if query %}
+							<p {% if isNestedQuery %} class="text-muted no-margin pull-left" {% else %} class="text-muted pull-left" {% endif %}>Showing results for {{query}}</p>
+						{% endif %}
+						</div>
+						
+						<div class="col-md-6">
+							<div {% if isNestedQuery %} class="checkbox no-margin pull-right" {% else %} class="checkbox pull-right" {% endif %} style="margin-top:2px;">
+								<label><input type="checkbox" name="nestedsearch" {% if isNestedQuery %} checked {% endif %}>Check to perform nested search</label>
+							</div>
+						</div>
+					</div>
+					
+						
+					{% if isNestedQuery %}
+						<a  class="download-link" href="PleaseEnableJavascript.html" onclick="downloadZipHandled(event);return false;" >Download All?</a>
 					{% endif %}
 						<!-- /input-group -->
 
-						<div class="checkbox pull-right" style="margin-top:2px;">
-  							<label><input type="checkbox" name="nestedsearch">Check to perform nested search</label>
-						</div>
+						
 					</form>
 					
 					
@@ -161,6 +175,11 @@
 	
 	function markupsearchbuttonHandled(event){
 		document.getElementById("searchtype").value="markup";
+		document.getElementById("search-form").submit();	
+	}
+	
+	function downloadZipHandled(event){
+		document.getElementById("download").value="true";
 		document.getElementById("search-form").submit();	
 	}
 	</script>

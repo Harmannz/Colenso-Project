@@ -37,7 +37,8 @@ var express = require('express'),
 	archiver = require('archiver'),
 	fs = require('fs'),
 	log = require('./debug'),
-	session = require('express-session');
+	session = require('express-session'),
+	deasync = require('deasync');
 
 
 // Set up express
@@ -91,18 +92,10 @@ env.addFilter("date", nunjucksDate);
     // Explore
     router.get("/explore", function(req, res) {
         "use strict";
-		/*
-		if nestedsearch 
-		1. maintain a collection of previous {search : query, searchtype : searchtype} 
-		2. a. when nested search is pressed, perform query using nested path
-		2. a. 1. recursive function in database that 
-		2. b. when normal search is pressed, clear the previous search history
-		
-		*/
 
 		var searchtype = req.query.searchtype;
 		var query = req.query.q;
-		var downloadZip = req.query.download == "download";
+		var downloadZip = req.query.download ;
 		var searchhistory = {searchtype : searchtype, searchstring : query};
 		
 		if (req.query.nestedsearch && req.query.searchtype && req.query.q){
@@ -337,20 +330,23 @@ searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, do
 		if (downloadZip){
 			var zipfilename = "colenso-docs.zip";
 			
-			res.set('Content-Type', 'application/zip');
-			res.set('Content-Disposition', 'attachment; filename=' + zipfilename);
-			var zip = archiver('zip');
-			zip.pipe(res);
-			
-			zip.on('error', function(err) {
+			var archive = archiver('zip');
+
+			archive.on('error', function(err) {
 				res.status(500).send({error: err.message});
 			});
 
-			//on stream end we can end the request
-			zip.on('end', function() {
-				console.log('Archive wrote %d bytes', zip.pointer());
-				return res.end();
+			//on stream closed we can end the request
+			archive.on('end', function() {
+				console.log('Archive wrote %d bytes', archive.pointer());
 			});
+
+			//set the archive name
+			res.attachment(zipfilename);
+			
+			//this is the streaming magic
+			archive.pipe(res);
+			
 			var paths = [];
 			//get 
 			database.getNestedQueryPaths(searchhistory, function(result){
@@ -364,24 +360,26 @@ searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, do
 				});
 								
 				//here for each db:path split into author, filetype, filename
+				
 				for (var i = 0; i < paths.length; i++){
-					var patharray = paths[i].split("/");
-					var author = patharray[0];
-					var filetype = patharray[1];
-					var filename = patharray[2];
-					database.getFileRawToEdit(author+"/"+filetype+"/"+filename, function(result){
+					var filename = paths[i].split('/')[2];
+					var body = null;
+					var done = false;
+					//do following until body != null after that archive.append
+					database.getFileRawToEdit(paths[i], function(result){
 						var $ = cheerio.load(result, { xmlMode: true });
-						var body = $.html();
-						zip.append(body, {name : filename})
-						
-					})
+						body = $.html();
+						done = true;						
+					});
+					deasync.loopWhile(function(){return !done;});
+					archive.append(body, {name : filename})
+					
 				}
 				
 				
-				console.log("finished zip append");
-				zip.finalize();
-				console.log("finished zip finalize");
-			})
+				archive.finalize();
+				
+			});
 
 		}else{
 			database.loadStructure(function(rootNode){
@@ -402,7 +400,7 @@ searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, do
 						tableHeader : ["Author","Type","Title"],
 						"links" : links,
 						"query" : query,
-						"zipdownload" : true,
+						"isNestedQuery" : true,
 						"hidequery" : true
 						});
 				});
