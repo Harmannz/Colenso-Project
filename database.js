@@ -3,7 +3,8 @@ var basex  = require("basex"),
 	convertToHierarchy = require("./data/navigation").convertToHierarchy,
 	assert = require('assert'),
 	log = require('./debug'),
-	Readable = require('stream').Readable;
+	Readable = require('stream').Readable,
+	fs = require('fs');
 
 
 function Database() {
@@ -175,7 +176,7 @@ function Database() {
 			if (!err == null){
 				callback("");
 			}
-			assert.equal(err, null);
+			//assert.equal(err, null);
 			//console.log(result.result);
 			callback(result.result);
 		});			
@@ -259,24 +260,89 @@ function Database() {
 		
 		//return "Testing";
 	},
-	
-	this.updateFile = function(path, inputStream, callback){
+	this.validateXML = function(xmlToValidate, callback){
+		
 		var session = new basex.Session("localhost", 1984, "admin", "admin");
-		session.execute('OPEN colenso');
-		var s = new Readable;
-		s.push(inputStream);
-		s.push(null);
-		session.replace(path, s, function(err, result){
-			console.log("-----\n");
-			console.log(result);
-			console.log(path);
-			console.log("------");
-			callback(result); //result.ok may be true or false
+		var validateXMLQuery = 'let $doc := ' + xmlToValidate +
+							" let $schema := <xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' targetNamespace='http://www.tei-c.org/ns/1.0'>     <xs:element name='TEI'/>   </xs:schema>" +
+							' return validate:xsd($doc, $schema)';
+							
+		var query = session.query(validateXMLQuery);
+		console.log(validateXMLQuery);
+		query.execute(function (err, result) {
+				callback(result);
+				session.close();
+			
+		});		
+		
+		
+
+/*
+		var schemaPath ="resources/tei_bare.xsd"; 
+		fs.readFile(schemaPath, 'utf-8', function(err, schema){
+			if (err){
+				console.log("error in readfile");
+				console.log(err);
+				callback(false);
+			}
+			var session = new basex.Session("localhost", 1984, "admin", "admin");
+			var validateXMLQuery = 'let $doc := ' + xmlToValidate +
+								" let $schema :="  + schema +
+								' return validate:xsd($doc, $schema)';
+								
+			var query = session.query(validateXMLQuery);
+			console.log(validateXMLQuery);
+			query.execute(function (err, result) {
+				if (result.ok){
+					callback(true);
+					session.close();
+				}else{
+					console.log(result);
+					console.log(err);
+					callback(false);
+					session.close();
+				}
+			});
 		});
-		session.close();
+		*/
+	},
+	this.updateFile = function(path, inputStream, callback){
+		
+		
+		this.validateXML(inputStream, function(result){
+			if (result.ok){
+				var session = new basex.Session("localhost", 1984, "admin", "admin");
+				session.execute('OPEN colenso');
+				//check if inputStream is valid here
+				
+				//schema is valid
+				var s = new Readable;
+				s.push(inputStream);
+				s.push(null);
+				session.replace(path, s, function(err, result){
+					console.log("-----\n");
+					console.log(result);
+					console.log(path);
+					console.log("------");
+					callback(result); //result.ok may be true or false
+				});
+
+				session.close();
+				
+			}else{
+				callback(result);
+			}
+			
+		});
+
 		
 	},
-	
+	this.readFile = function(path,encoding){
+		fs.readFile(path, encoding, function(err, result){
+			if (err) return err;
+			callback(null, result);
+		});
+	}
 	this.nestedSearch = function(searchhistory, callback){
 		//searchhistory = [{searchtype : markup || text, searchstring : ""}]
 		//first create search based on array of searches

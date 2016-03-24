@@ -96,7 +96,7 @@ env.addFilter("date", nunjucksDate);
 		var searchtype = req.query.searchtype;
 		var query = req.query.q;
 		var downloadZip = req.query.download ;
-		var searchhistory = {searchtype : searchtype, searchstring : query};
+		var searchhistory = {searchtype : searchtype, searchstring : parseQuery(query)};
 		
 		if (req.query.nestedsearch && req.query.searchtype && req.query.q){
 			req.session.searchhistory ? req.session.searchhistory.push(searchhistory) : req.session.searchhistory = [searchhistory];
@@ -315,8 +315,9 @@ var viewFile = function(author, filetype, filename, doctype, res){
 		}
 }
 
-searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, downloadZip, res){
-	
+searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch, downloadZip, res){
+	var builtQuery = parseQuery(rawQuery);
+	console.log(builtQuery);
 	if (isnestedsearch && searchhistory && searchhistory.length >= 1){
 		/*
 		if(not download)
@@ -399,7 +400,7 @@ searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, do
 					res.render('explore', {categories : rootNode.children,
 						tableHeader : ["Author","Type","Title"],
 						"links" : links,
-						"query" : query,
+						"query" : rawQuery,
 						"isNestedQuery" : true,
 						"hidequery" : true
 						});
@@ -407,10 +408,19 @@ searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, do
 			});
 		}
 	}
-	else if (searchtype == "text" && query){
-			
+	else if (searchtype == "text" && builtQuery){
+		//parse the text search format : "text" AND/OR/NOT "  ";
+		//do not parse : "AND/OR/NOT" 
+		/*
+		1. split 	
+		parse through characters in query.
+		if (") then continue until next (") or end of string
+		if (AND/OR/NOT) then convert to ftand/ftor/ftnot
+		
+		*/
+		//query = parseQuery(query);
 		database.loadStructure(function(rootNode){
-			database.textSearch(query, function(result){
+			database.textSearch(builtQuery, function(result){
 				
 				var $ = cheerio.load(result, { xmlMode: true });
 				var links = [];
@@ -426,16 +436,16 @@ searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, do
 				res.render('explore', {categories : rootNode.children,
 					tableHeader : ["Author","Type","Title"],
 					"links" : links,
-					"query" : query
+					"query" : rawQuery
 					});
 				
 			});
 		});
 		
-		} else if (searchtype == "markup" && query) {
+		} else if (searchtype == "markup" && builtQuery) {
 			
 			database.loadStructure(function(rootNode){
-				database.markupSearch(query, function(result){
+				database.markupSearch(builtQuery, function(result){
 					
 					var $ = cheerio.load(result, { xmlMode: true });
 					var links = [];
@@ -451,7 +461,7 @@ searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, do
 					res.render('explore', {categories : rootNode.children,
 						tableHeader : ["Author","Type","Title"],
 						"links" : links,
-						"query" : query
+						"query" : rawQuery
 						});
 					
 				});
@@ -482,3 +492,80 @@ searchandexplore = function(searchtype, query, searchhistory, isnestedsearch, do
 		});	
 		}
 }
+
+
+parseQuery = function(rawQuery){
+	
+	var regex = /\"[^"]*"| *([^"]*)/g
+	if (rawQuery){
+		var replace = rawQuery.replace(regex, function(match, p1)
+		{
+			if (p1 == undefined){
+				return match;
+			}else{
+				var operators = p1.split(" ");
+				for (var i = 0; i < operators.length ; i++){
+					var operator = operators[i];
+					operator.toLowerCase() == "and" ? operators[i] = "ftand" : '';
+					operator.toLowerCase() == "or" ? operators[i] = "ftor" : '';
+					operator.toLowerCase() == "not" ? operators[i] = "ftnot" : '';
+				}
+				
+				p1 = " "+ operators.join(" ");			
+				return p1;
+			}
+		});
+		return replace;
+	} else{
+		return rawQuery;
+	}
+}
+
+/*
+testParser = function(){
+	var index = 0;
+	var query;
+	
+	this.parseQuery = function(query){
+		this.query = query;
+		while (this.index < this.query.length){
+			this.evaluateNextCommand();
+		}
+	},
+	this.evaluateNextCommand = function(){
+		//if query[index] == " then readWord
+		//if query[index : index+1] == ft then read operator and convert
+		this.skipWhiteSpace();
+		if (query[index] == '"'){
+			index = index + 1;
+			this.skipKeywords();
+		}
+		var operation = this.readWord();
+	} ,
+	this.skipWhiteSpace = function(){
+		while (index < query.length && query[index] == " "){
+			index = index + 1;
+		}
+	},
+	this.readWord = function(){
+		var start = index;
+		while(index < query.length && query[index]){
+			index = index + 1;
+		}
+		//this should contain text such as AND/OR/NOT or other operators.
+		
+		return query.substring(start, index);
+		
+	},
+	
+	this.skipKeywords = function(){
+		while(index < query.length && query[index] != '"'){
+			index = index + 1;
+		}
+	}
+	
+	
+	
+}
+
+*/

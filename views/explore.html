@@ -80,7 +80,7 @@
 						<div class="input-group">
 							<input type="hidden" name="searchtype" value="text" id="searchtype"/>
 							<input type="hidden" name="download" value="" id="download"/>
-							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder="Search... " {% else %} value ="{{query}}" {% endif %} >
+							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder='Example search = "William" AND "Colenso" ' {% else %} value ="{{query}}" {% endif %} >
 							
 							<span class="input-group-btn">
 								<button class="btn btn-default" type="button" onclick="textsearchbuttonHandled(event);" id="search-button">Text Search</button>
