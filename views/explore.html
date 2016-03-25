@@ -80,7 +80,7 @@
 						<div class="input-group">
 							<input type="hidden" name="searchtype" value="text" id="searchtype"/>
 							<input type="hidden" name="download" value="" id="download"/>
-							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder='Example search = "William" AND "Colenso" ' {% else %} value ="{{query}}" {% endif %} >
+							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder='"William" AND "Colenso" ' {% else %} value ="{{query | last}}" {% endif %} >
 							
 							<span class="input-group-btn">
 								<button class="btn btn-default" type="button" onclick="textsearchbuttonHandled(event);" id="search-button">Text Search</button>
@@ -91,7 +91,9 @@
 					<div class="row">
 						<div class="col-md-6">
 						{% if query %}
-							<p {% if isNestedQuery %} class="text-muted no-margin pull-left" {% else %} class="text-muted pull-left" {% endif %}>Showing results for {{query}}</p>
+							<p {% if isNestedQuery %} class="text-muted no-margin pull-left" {% else %} class="text-muted pull-left" {% endif %}>
+								Showing results for {% for q in query %} {% if loop.first %}{{q}} {% else %} > {{q}} {% endif %}{% endfor %}
+							</p>
 						{% endif %}
 						</div>
 						

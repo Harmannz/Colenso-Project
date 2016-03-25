@@ -164,13 +164,13 @@ function Database() {
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
 		
-		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") where $doc//text() contains text '+query+
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") where $doc//text() contains text '+parseQuery(query)+
 					' let $path := db:path($doc) ' +
 					'let $title := $doc/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
 					'let $author := $doc/TEI/teiHeader//titleStmt//author//text() ' +
 					'return <link><path>{$path}</path><title>{$title}</title><author>{$author}</author></link>';
 		
-
+		console.log(input);
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
 			if (!err == null){
@@ -190,17 +190,17 @@ function Database() {
 	},
 	
 	this.markupSearch = function(query, callback){
-
+		
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
 		
-		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in '+ query +
+		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in '+ parseQuery(query) +
 					' let $path := db:path(root($item)) ' +
 					'let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
 					'let $author := root($item)/TEI/teiHeader//titleStmt//author//text() ' +
 					'return <link><path>{$path}</path><title>{$title}</title><author>{$author}</author></link>';
 
-
+		console.log(input);
 //		declare default element namespace "http://www.tei-c.org/ns/1.0";  for $item in /TEI let $xml := collection("colenso/" || db:path) let $path:=db:path($xml)  
 		//declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") for $item in db:path($doc) return $item
 		
@@ -391,13 +391,38 @@ function Database() {
 	},
 	this.prepareNestedQuery = function(nestedquery, query){
 		if (query.searchtype == "text"){
-			return 'for $doc in ( '+ nestedquery+' ) where $doc//text() contains text '+query.searchstring + ' return $doc';
+			return 'for $doc in ( '+ nestedquery+' ) where $doc//text() contains text '+parseQuery(query.searchstring) + ' return $doc';
 		}
 		else if (query.searchtype == "markup"){
-			return 'for $doc in ( '+ nestedquery+' ) where $doc '+ query.searchstring+' return $doc'
+			return 'for $doc in ( '+ nestedquery+' ) where $doc '+ parseQuery(query.searchstring)+' return $doc'
 		}
 	}
 }
 
-
+parseQuery = function(rawQuery){
+	
+	var regex = /\"[^"]*"| *([^"]*)/g
+	if (rawQuery){
+		var replace = rawQuery.replace(regex, function(match, p1)
+		{
+			if (p1 == undefined){
+				return match;
+			}else{
+				var operators = p1.split(" ");
+				for (var i = 0; i < operators.length ; i++){
+					var operator = operators[i];
+					operator.toLowerCase() == "and" ? operators[i] = "ftand" : '';
+					operator.toLowerCase() == "or" ? operators[i] = "ftor" : '';
+					operator.toLowerCase() == "not" ? operators[i] = "ftnot" : '';
+				}
+				
+				p1 = " "+ operators.join(" ");			
+				return p1;
+			}
+		});
+		return replace;
+	} else{
+		return rawQuery;
+	}
+}
 module.exports.Database = Database;

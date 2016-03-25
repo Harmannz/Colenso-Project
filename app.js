@@ -96,7 +96,7 @@ env.addFilter("date", nunjucksDate);
 		var searchtype = req.query.searchtype;
 		var query = req.query.q;
 		var downloadZip = req.query.download ;
-		var searchhistory = {searchtype : searchtype, searchstring : parseQuery(query)};
+		var searchhistory = {searchtype : searchtype, searchstring : query};
 		
 		if (req.query.nestedsearch && req.query.searchtype && req.query.q){
 			req.session.searchhistory ? req.session.searchhistory.push(searchhistory) : req.session.searchhistory = [searchhistory];
@@ -316,8 +316,8 @@ var viewFile = function(author, filetype, filename, doctype, res){
 }
 
 searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch, downloadZip, res){
-	var builtQuery = parseQuery(rawQuery);
-	console.log(builtQuery);
+	//var builtQuery = parseQuery(rawQuery);
+	//console.log(rawQuery);
 	if (isnestedsearch && searchhistory && searchhistory.length >= 1){
 		/*
 		if(not download)
@@ -383,9 +383,10 @@ searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch,
 			});
 
 		}else{
+			//Perform Nested Search
 			database.loadStructure(function(rootNode){
 				database.nestedSearch(searchhistory, function(result){
-					//here the links I will have will be that 
+					
 					var $ = cheerio.load(result, { xmlMode: true });
 					var links = [];
 					$('link').each(function(i, elem){
@@ -397,10 +398,15 @@ searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch,
 						links.push({"path" : path, "title" : title, "type" : type, "author" : author});
 					});
 					
+					//get array of searchhistory.searchstring
+					var nestedQueries = [];
+					for (var i = 0; i < searchhistory.length; i++){
+						nestedQueries.push(searchhistory[i].searchstring);
+					}
 					res.render('explore', {categories : rootNode.children,
 						tableHeader : ["Author","Type","Title"],
 						"links" : links,
-						"query" : rawQuery,
+						"query" : nestedQueries,
 						"isNestedQuery" : true,
 						"hidequery" : true
 						});
@@ -408,7 +414,7 @@ searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch,
 			});
 		}
 	}
-	else if (searchtype == "text" && builtQuery){
+	else if (searchtype == "text" && rawQuery){
 		//parse the text search format : "text" AND/OR/NOT "  ";
 		//do not parse : "AND/OR/NOT" 
 		/*
@@ -420,7 +426,7 @@ searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch,
 		*/
 		//query = parseQuery(query);
 		database.loadStructure(function(rootNode){
-			database.textSearch(builtQuery, function(result){
+			database.textSearch(rawQuery, function(result){
 				
 				var $ = cheerio.load(result, { xmlMode: true });
 				var links = [];
@@ -436,16 +442,16 @@ searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch,
 				res.render('explore', {categories : rootNode.children,
 					tableHeader : ["Author","Type","Title"],
 					"links" : links,
-					"query" : rawQuery
+					"query" : [rawQuery]
 					});
 				
 			});
 		});
 		
-		} else if (searchtype == "markup" && builtQuery) {
+		} else if (searchtype == "markup" && rawQuery) {
 			
 			database.loadStructure(function(rootNode){
-				database.markupSearch(builtQuery, function(result){
+				database.markupSearch(rawQuery, function(result){
 					
 					var $ = cheerio.load(result, { xmlMode: true });
 					var links = [];
@@ -461,7 +467,7 @@ searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch,
 					res.render('explore', {categories : rootNode.children,
 						tableHeader : ["Author","Type","Title"],
 						"links" : links,
-						"query" : rawQuery
+						"query" : [rawQuery]
 						});
 					
 				});
