@@ -7,12 +7,27 @@ var basex  = require("basex"),
 	fs = require('fs');
 
 
+
 function Database() {
     "use strict";
 
     this.db = 'colenso';
 	this.session;// = new basex.Session("localhost", 1984, "admin", "admin");
 	//this.session.execute('OPEN colenso');
+	
+	
+	var file = "test.db";
+	var exists = fs.existsSync(file);
+	var sqlite3 = require("sqlite3").verbose();
+	var db = new sqlite3.Database(file);
+	db.serialize(function(){
+		if(!exists){
+			db.run("DROP TABLE IF EXISTS Searches CREATE TABLE Searches (Search varchar(255), Date TEXT )")
+			console.log("Created table");
+		}
+		
+		
+	});
 	this.loadStructure = function(callback){
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');

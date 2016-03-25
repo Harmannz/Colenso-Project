@@ -77,7 +77,7 @@ env.addFilter('is_edit', function(str) {
 
 
 var nunjucksDate = require('nunjucks-date');
-nunjucksDate.setDefaultFormat('MMMM Do YYYY, h:mm:ss a');
+nunjucksDate.setDefaultFormat('YYYY-MM-Do, hh:mm:ss');
 env.addFilter("date", nunjucksDate);
 
     var router = express.Router();
@@ -199,7 +199,9 @@ env.addFilter("date", nunjucksDate);
 		database.addFile(path, s, function(result){
 			console.log(result);
 			if (result.ok){
-				viewFile(author, category, req.file.originalname, "text", res);
+				console.log("explore" + path);
+				res.redirect("explore" + path);
+				//viewFile(author, category, req.file.originalname, "text", res);
 			}else{
 				//res.render("contribute-result", {result:result});
 				res.render("error", {err : {message : "Could not upload. Make sure xml file is TEI format and does not already exist!"}});
@@ -232,8 +234,8 @@ env.addFilter("date", nunjucksDate);
 			
 			
 			if (result.ok){
-				var patharray = req.body.filepath.split("/");
-				viewFile(patharray[0], patharray[1], patharray[2], "text", res);
+				//var patharray = req.body.filepath.split("/");
+				res.redirect("explore/" + req.body.filepath);
 			}else{
 				//res.render("contribute-result", {result:result});
 				res.render("error", {err : {message : "Could not upload. Make sure xml file is TEI format and does not already exist!"}});
@@ -260,59 +262,59 @@ var viewFile = function(author, filetype, filename, doctype, res){
 	
 	
 	var maxChar = 25;
-		if (!(doctype == "raw" || doctype == "text" || doctype == "edit")){
-			doctype = "text";
-		}
-		if (doctype == "raw"){
-			console.log("showing raw xml")
-			//go to getFileRaw route and return whole document
-			database.getFileRawToEdit(author+"/"+filetype+"/"+filename, function(result){
-				var $ = cheerio.load(result, { xmlMode: true });
-				var body = $.html();
-				res.set('Content-Type','text/xml');
-				res.send(body);
-			});
-		} else if (doctype == "edit"){
-			
-			database.getFileRawToEdit(author+"/"+filetype+"/"+filename, function(xml){
-				var $ = cheerio.load(xml, { xmlMode: true });
-				var body = $.html();
-				database.getFileRawData(author+"/"+filetype+"/"+filename, function(result){
-					var $ = cheerio.load(result, { xmlMode: true });					
-					var filepath = $('result').find('path').text();
-					var path = $('result').find('path').text().split("/");
-					var title = $('result').find('title').text();
-					var front = $('result').find('front').text();					
-					
-					var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
-					console.log("filepath: " + filepath);
-					console.log("body: " + body);
-					res.render('edit', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
-									doctype : "edit", filepath : filepath});	
-				});
-	
-			});
-		}
-		 else {
+	if (!(doctype == "raw" || doctype == "text" || doctype == "edit")){
+		doctype = "text";
+	}
+	if (doctype == "raw"){
+		console.log("showing raw xml")
+		//go to getFileRaw route and return whole document
+		database.getFileRawToEdit(author+"/"+filetype+"/"+filename, function(result){
+			var $ = cheerio.load(result, { xmlMode: true });
+			var body = $.html();
+			res.set('Content-Type','text/xml');
+			res.send(body);
+		});
+	} else if (doctype == "edit"){
 		
-			database.getFile(author+"/"+filetype+"/"+filename, function(result){
-				var $ = cheerio.load(result, { xmlMode: true });
+		database.getFileRawToEdit(author+"/"+filetype+"/"+filename, function(xml){
+			var $ = cheerio.load(xml, { xmlMode: true });
+			var body = $.html();
+			database.getFileRawData(author+"/"+filetype+"/"+filename, function(result){
+				var $ = cheerio.load(result, { xmlMode: true });					
 				var filepath = $('result').find('path').text();
 				var path = $('result').find('path').text().split("/");
 				var title = $('result').find('title').text();
-				var front = $('result').find('front').text();
-				var body = $('result').find('body');
-				
+				var front = $('result').find('front').text();					
 				
 				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
+				console.log("filepath: " + filepath);
+				console.log("body: " + body);
+				res.render('edit', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
+								doctype : "edit", filepath : filepath});	
+			});
+
+		});
+	}
+	 else {
+	
+		database.getFile(author+"/"+filetype+"/"+filename, function(result){
+			var $ = cheerio.load(result, { xmlMode: true });
+			var filepath = $('result').find('path').text();
+			var path = $('result').find('path').text().split("/");
+			var title = $('result').find('title').text();
+			var front = $('result').find('front').text();
+			var body = $('result').find('body');
+			
+			
+			var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
+			
+			res.render('view', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
+								doctype : "text", filepath : filepath});
 				
-				res.render('view', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
-									doctype : "text", filepath : filepath});
-					
-				});
-				
-				//console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
-		}
+			});
+			
+			//console.log(filetype ? rootNode.children[author].children[filetype].children : rootNode.children);
+	}
 }
 
 searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch, downloadZip, res){
