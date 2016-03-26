@@ -4,10 +4,25 @@ var basex  = require("basex"),
 	assert = require('assert'),
 	log = require('./debug'),
 	Readable = require('stream').Readable,
-	fs = require('fs');
+	fs = require('fs'),
+	sqlite3 = require("sqlite3").verbose();
+	
+//Setup sqlite database
+var dbFile = './test.db';
+var dbExists = fs.existsSync(dbFile);
+	
+if(!dbExists){
+	console.log("Creating DB file.");
+	fs.openSync(dbFile, "w");
+}
 
+//initialise the database:
+var db = new sqlite3.Database(dbFile);
 
-
+if(!dbExists){
+	db.run('CREATE TABLE `searchtable` (`date` TEXT, `query` TEXT)');
+}	
+	
 function Database() {
     "use strict";
 
@@ -16,18 +31,7 @@ function Database() {
 	//this.session.execute('OPEN colenso');
 	
 	
-	var file = "test.db";
-	var exists = fs.existsSync(file);
-	var sqlite3 = require("sqlite3").verbose();
-	var db = new sqlite3.Database(file);
-	db.serialize(function(){
-		if(!exists){
-			db.run("DROP TABLE IF EXISTS Searches CREATE TABLE Searches (Search varchar(255), Date TEXT )")
-			console.log("Created table");
-		}
-		
-		
-	});
+	
 	this.loadStructure = function(callback){
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
@@ -100,6 +104,7 @@ function Database() {
 			assert.equal(err, null);			
 			callback(result.result);
 		});
+		this.addQueryToDatabase(collection)
 		// close query instance
 		query.close();
 		
@@ -107,6 +112,20 @@ function Database() {
 		this.session.close();
 	},
 	
+	this.addQueryToDatabase = function(query){
+		db.serialize(function(){
+			
+			var stmt = db.prepare("INSERT INTO `searchtable` VALUES (?,?)");
+			var date = Date.now();
+			stmt.run(date, query);
+			stmt.finalize();
+			
+			db.each("SELECT `date`, `query` FROM searches", function(err, row){
+				console.log("Date: " + row.date + ", Query: " + row.query);
+			});
+			
+		});
+	}
 	this.getFileRaw = function(collection, callback){
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
