@@ -20,7 +20,15 @@ if(!dbExists){
 var db = new sqlite3.Database(dbFile);
 db.serialize(function(){
 	
+	db.parallelize(function() {
+		// Queries scheduled here will run in parallel.
+		//create table to hold all searches 
 		db.run('CREATE TABLE IF NOT EXISTS `searchtable` (`date` TEXT, `query` TEXT)');
+		//create table to hold all documents that have been uploaded
+		db.run('CREATE TABLE IF NOT EXISTS `uploads` (`path` TEXT PRIMARY KEY)')
+   });
+   
+	
 		console.log("Table initialised");
 });
 
@@ -117,7 +125,7 @@ function Database() {
 	this.addQueryToDatabase = function(query){
 		
 		var stmt = db.prepare("INSERT INTO `searchtable` VALUES (?,?)");
-		var date = Date.now();
+		var date = new Date().toISOString();
 		stmt.run(date, query);
 		stmt.finalize();
 		
@@ -127,6 +135,20 @@ function Database() {
 		});
 		
 	},
+	this.addUploadsToDatabase = function(path){
+		
+		var stmt = db.prepare("INSERT INTO `uploads` VALUES (?)");
+		
+		stmt.run(path);
+		stmt.finalize();
+		
+		db.each("SELECT `path` FROM `uploads`", function(err, row){
+			//console.log(row);
+			console.log("Path: " + row.path );
+		});
+		
+	},
+	
 	this.getFileRaw = function(collection, callback){
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
@@ -390,6 +412,10 @@ function Database() {
 		var input = "collection('colenso')";
 		for(var i = 0; i < searchhistory.length; i++){
 			input = this.prepareNestedQuery(input, searchhistory[i]);
+			//add last query to database since all the other ones have already been added
+			if (i == searchhistory.length - 1){
+				if(searchhistory[i].searchstring){this.addQueryToDatabase(searchhistory[i].searchstring);}
+			}
 		}
 		
 		var query = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in ( '+ input + ' ) ' +
@@ -428,6 +454,7 @@ function Database() {
 		});		
 	},
 	this.prepareNestedQuery = function(nestedquery, query){
+		
 		if (query.searchtype == "text"){
 			return 'for $doc in ( '+ nestedquery+' ) where $doc//text() contains text '+parseQuery(query.searchstring) + ' return $doc';
 		}

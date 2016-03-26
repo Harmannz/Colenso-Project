@@ -184,6 +184,10 @@ env.addFilter("date", nunjucksDate);
 			res.render('contribute', {authors : rootNode.children, categories : ['diary', 'newspaper_letters', 'private_letters']});
 		});
 	});
+	
+	app.get("/stats", function(req,res){
+		res.render('statistics');
+	});
 	app.post("/upload",upload.single('file'), function(req,res,next){
 		"use strict";
 		req.session.searchhistory=[];
@@ -199,7 +203,7 @@ env.addFilter("date", nunjucksDate);
 		database.addFile(path, s, function(result){
 			console.log(result);
 			if (result.ok){
-				console.log("explore" + path);
+				database.addUploadsToDatabase(path);
 				res.redirect("explore" + path);
 				//viewFile(author, category, req.file.originalname, "text", res);
 			}else{
