@@ -18,10 +18,12 @@ if(!dbExists){
 
 //initialise the database:
 var db = new sqlite3.Database(dbFile);
+db.serialize(function(){
+	
+		db.run('CREATE TABLE IF NOT EXISTS `searchtable` (`date` TEXT, `query` TEXT)');
+		console.log("Table initialised");
+});
 
-if(!dbExists){
-	db.run('CREATE TABLE `searchtable` (`date` TEXT, `query` TEXT)');
-}	
 	
 function Database() {
     "use strict";
@@ -113,18 +115,17 @@ function Database() {
 	},
 	
 	this.addQueryToDatabase = function(query){
-		db.serialize(function(){
-			
-			var stmt = db.prepare("INSERT INTO `searchtable` VALUES (?,?)");
-			var date = Date.now();
-			stmt.run(date, query);
-			stmt.finalize();
-			
-			db.each("SELECT `date`, `query` FROM searches", function(err, row){
-				console.log("Date: " + row.date + ", Query: " + row.query);
-			});
-			
+		
+		var stmt = db.prepare("INSERT INTO `searchtable` VALUES (?,?)");
+		var date = Date.now();
+		stmt.run(date, query);
+		stmt.finalize();
+		
+		db.each("SELECT `date`, `query` FROM `searchtable`", function(err, row){
+			//console.log(row);
+			console.log("Date: " + row.date + ", Query: " + row.query);
 		});
+		
 	}
 	this.getFileRaw = function(collection, callback){
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
