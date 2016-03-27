@@ -8,7 +8,7 @@ var basex  = require("basex"),
 	sqlite3 = require("sqlite3").verbose();
 	
 //Setup sqlite database
-var dbFile = './test.db';
+var dbFile = './database/test.db';
 var dbExists = fs.existsSync(dbFile);
 	
 if(!dbExists){

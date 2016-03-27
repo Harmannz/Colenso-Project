@@ -19,11 +19,21 @@
 #search-text{
 	border-color:#333;
 }
+
+#stat-icon{
+font-size : 2em;	
+}
+
 @media (min-width:768px){
 #search{padding-top:100px}
 #breadcrumbs , #contribute{padding-top:100px}
 #data{padding:100px 0px;}
+#stat-icon{font-size: 5em;}
 }
+
+
+
+
 
 .btn-file {
     position: relative;
