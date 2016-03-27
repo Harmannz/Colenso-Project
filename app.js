@@ -38,8 +38,7 @@ var express = require('express'),
 	fs = require('fs'),
 	log = require('./debug'),
 	session = require('express-session'),
-	deasync = require('deasync')
-	store = require('json-fs-store')('./database/');
+	deasync = require('deasync');
 
 
 // Set up express
@@ -195,8 +194,10 @@ env.addFilter("date", nunjucksDate);
 			3. top 100 searchterms
 			4. top 100 opened 
 		*/
-		
+		var mostQueried = database.get100CommonQueriedDocuments();
+		console.log(mostQueried);
 		res.render('statistics');
+		console.log("Rendered view");
 	});
 	app.post("/upload",upload.single('file'), function(req,res,next){
 		"use strict";
@@ -213,24 +214,7 @@ env.addFilter("date", nunjucksDate);
 		database.addFile(path, s, function(result){
 			console.log(result);
 			if (result.ok){
-				//database.addUploadsToDatabase(path);
-				store.remove('num-doc-uploaded', function(err, object){
-					if (err) {console.log("Error getting num-doc-uploaded : " + err);}
-					console.log(object);
-					
-					if (!object){
-						//create upload object
-						console.log("creating doc-uploaded");
-						store.add({id:'num-doc-uploaded', count: 1});
-					}else{
-						console.log("updating doc-uploaded");
-						
-						var newCount = object.count + 1;
-						console.log(newCount);
-						store.add({id:'num-doc-uploaded', count: newCount});
-						//increase count of existing upload object
-					}
-				});
+				database.incrementUploadCountInDatabase();
 				res.redirect("explore" + path);
 				//viewFile(author, category, req.file.originalname, "text", res);
 			}else{

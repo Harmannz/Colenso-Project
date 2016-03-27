@@ -27,10 +27,10 @@ db.serialize(function(){
 		//create table to hold all documents that have been uploaded
 		db.run('CREATE TABLE IF NOT EXISTS `opened` (`path` TEXT PRIMARY KEY, `author` TEXT, `filetype` TEXT, `title` TEXT)')
 		//author, filetype, filename, path
+		db.run('CREATE TABLE IF NOT EXISTS `upload-count` ( `id` INTEGER PRIMARY KEY, `count` INTEGER)');
    });
    
-	
-		console.log("Table initialised");
+	console.log("Table initialised");
 });
 
 	
@@ -136,6 +136,14 @@ function Database() {
 		});
 		
 	},
+	this.get100CommonQueriedDocuments = function(callback){
+		var queries = [];
+		db.each("SELECT `query` COUNT(`query`) AS `occurrence` FROM `searchtable` GROUP BY `query` ORDER BY `occurrence` DESC LIMIT 100", function(err, row){
+			//console.log(row);
+			queries.push(row.query);
+		});
+		return queries;
+	},
 	this.addOpenedFileToDatabase = function(path, author, filetype, title){
 		
 		var stmt = db.prepare("INSERT INTO `opened` VALUES (?, ?, ?, ?)");
@@ -149,7 +157,28 @@ function Database() {
 		});
 		
 	},
-	
+	this.incrementUploadCountInDatabase = function(){
+		//first query db to get upload count value
+		
+		//return count : oldCount + 1
+		db.get("SELECT id, count FROM `upload-count`", function(err, row){
+		    if (err) { console.log("Error adding to upload count");}
+		    else {
+				// As an object with named parameters.
+				var id = row.id ? row.id : 1;
+				var count = row.count ? row.count + 1 : 1;
+      			db.run("UPDATE `upload-count` SET count = $count WHERE id = $id", {
+			       	$id: row.id,
+			    	$count: count
+			    });
+			}
+		});
+		
+		db.each("SELECT `id`, `count` FROM `upload-count`", function(err, row){
+			//console.log(row);
+			console.log("Id: " + row.id + ", Count: " + row.count);
+		});
+	},
 	this.getFileRaw = function(collection, callback){
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
