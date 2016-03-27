@@ -25,7 +25,8 @@ db.serialize(function(){
 		//create table to hold all searches 
 		db.run('CREATE TABLE IF NOT EXISTS `searchtable` (`date` TEXT, `query` TEXT)');
 		//create table to hold all documents that have been uploaded
-		db.run('CREATE TABLE IF NOT EXISTS `uploads` (`path` TEXT PRIMARY KEY)')
+		db.run('CREATE TABLE IF NOT EXISTS `opened` (`path` TEXT PRIMARY KEY, `author` TEXT, `filetype` TEXT, `title` TEXT)')
+		//author, filetype, filename, path
    });
    
 	
@@ -135,16 +136,16 @@ function Database() {
 		});
 		
 	},
-	this.addUploadsToDatabase = function(path){
+	this.addOpenedFileToDatabase = function(path, author, filetype, title){
 		
-		var stmt = db.prepare("INSERT INTO `uploads` VALUES (?)");
+		var stmt = db.prepare("INSERT INTO `opened` VALUES (?, ?, ?, ?)");
 		
-		stmt.run(path);
+		stmt.run(path, author, filetype, title);
 		stmt.finalize();
 		
-		db.each("SELECT `path` FROM `uploads`", function(err, row){
+		db.each("SELECT `path`, `author`, `filetype`, `title` FROM `opened`", function(err, row){
 			//console.log(row);
-			console.log("Path: " + row.path );
+			console.log("Path: " + row.path + ", Author: " + row.author + ", Filetype: " + row.filetype + ", Title: " + row.title );
 		});
 		
 	},

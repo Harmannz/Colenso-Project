@@ -174,7 +174,7 @@ env.addFilter("date", nunjucksDate);
 		var filetype = req.params.filetype;
 		var filename = req.params.filename;
 		var doctype = req.query.doctype;
-
+		
 		viewFile(author, filetype, filename, doctype, res);
 	});
     app.get("/contribute", function(req, res){
@@ -203,7 +203,7 @@ env.addFilter("date", nunjucksDate);
 		database.addFile(path, s, function(result){
 			console.log(result);
 			if (result.ok){
-				database.addUploadsToDatabase(path);
+				//database.addUploadsToDatabase(path);
 				res.redirect("explore" + path);
 				//viewFile(author, category, req.file.originalname, "text", res);
 			}else{
@@ -290,11 +290,16 @@ var viewFile = function(author, filetype, filename, doctype, res){
 				var title = $('result').find('title').text();
 				var front = $('result').find('front').text();					
 				
-				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
-				console.log("filepath: " + filepath);
-				console.log("body: " + body);
-				res.render('edit', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
-								doctype : "edit", filepath : filepath});	
+				if (!filepath){
+					res.status(500).render("error", {err : {message : "Invalid URL Request!"}});
+				}{
+					var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
+					console.log("filepath: " + filepath);
+					console.log("body: " + body);
+					res.render('edit', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
+									doctype : "edit", filepath : filepath});	
+									
+				}
 			});
 
 		});
@@ -309,11 +314,17 @@ var viewFile = function(author, filetype, filename, doctype, res){
 			var front = $('result').find('front').text();
 			var body = $('result').find('body');
 			
+			if (!filepath){
+				res.status(500).render("error", {err : {message : "Invalid URL Request!"}});
+			}else {
+				//add author, filetype, filename, path to database
+				
+				database.addOpenedFileToDatabase("/explore/" + filepath, author, filetype, title);
+				var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);			
+				res.render('view', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
+									doctype : "text", filepath : filepath});			
+			}
 			
-			var breadcrumbFilename = title.length > maxChar ? title.substring(0,maxChar) + "..." : title.substring(0,maxChar);
-			
-			res.render('view', {title: title, front : front, body : body, breadcrumbs : {author: path[0], type: path[1], file : breadcrumbFilename},
-								doctype : "text", filepath : filepath});
 				
 			});
 			
