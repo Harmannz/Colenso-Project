@@ -24,12 +24,20 @@
 font-size : 2em;	
 }
 
+
+
 @media (min-width:768px){
 #search{padding-top:100px}
 #breadcrumbs , #contribute{padding-top:100px}
 #data, #queriedTable, #openedTable{padding:100px 0px;}
-#stat-icon{font-size: 5em;}
+#stat-icon{font-size: 3em;}
 }
+
+@media(min-width:992px){
+#stat-icon{font-size: 5em;}	
+}
+
+
 
 
 
