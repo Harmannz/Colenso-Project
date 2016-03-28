@@ -61,6 +61,11 @@
 			</div>
 			{% endif %}
             <div class="row">
+				{% if searchError %}
+				<div class="alert alert-success text-center">
+					<strong>Error!</strong> Please search using appropriate buttons and syntax 
+				</div>
+				{% endif %}
 				<div class="col-md-3">
 					<div class="list-group">
 						{% for category,value in categories %}

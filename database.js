@@ -363,9 +363,11 @@ function Database() {
 		
 	},
 	this.textSearch = function(query, callback){
+		var self = this;
+		var originalQuery = query;
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
-		if (query){this.addQueryToDatabase(query);}
+//		if (query){this.addQueryToDatabase(query);}
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";  for $doc in collection("colenso") where $doc//text() contains text '+parseQuery(query)+
 					' let $path := db:path($doc) ' +
 					'let $title := $doc/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
@@ -380,7 +382,10 @@ function Database() {
 			}
 			//assert.equal(err, null);
 			//console.log(result.result);
-			result ? callback(result.result) : callback("");
+			if (result){
+				originalQuery ? self.addQueryToDatabase(originalQuery) : ""; 
+				callback(result.result)
+			}else{ callback("");}
 		});			
 		
 		
@@ -394,10 +399,11 @@ function Database() {
 	},
 	
 	this.markupSearch = function(query, callback){
-		
+		var self = this;
+		var originalQuery = query;
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");
 		this.session.execute('OPEN colenso');
-		if (query){this.addQueryToDatabase(query);}
+		//if (query){this.addQueryToDatabase(query);}
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0"; for $item in '+ parseQuery(query) +
 					' let $path := db:path(root($item)) ' +
 					'let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
@@ -411,9 +417,12 @@ function Database() {
 
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
-			assert.equal(err, null);
+			//assert.equal(err, null);
 			//console.log(result.result);
-			callback(result.result);
+			if(result){
+				originalQuery ? self.addQueryToDatabase(originalQuery) : ""; 
+				callback(result.result)
+			}else{callback("");}
 		});			
 		
 		/*
@@ -567,6 +576,7 @@ function Database() {
 					' let $path := db:path(root($item)) ' +
 					'let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
 					'let $author := root($item)/TEI/teiHeader//titleStmt//author//text() ' +
+					'order by $item' +
 					'return <link><path>{$path}</path><title>{$title}</title><author>{$author}</author></link>';
 					
 		console.log(query);
