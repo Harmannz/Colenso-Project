@@ -5,8 +5,7 @@ var basex  = require("basex"),
 	log = require('./debug'),
 	Readable = require('stream').Readable,
 	fs = require('fs'),
-	sqlite3 = require("sqlite3").verbose(),
-	deasync = require('deasync');
+	sqlite3 = require("sqlite3").verbose();
 	
 //Setup sqlite database
 var dbFile = './test.db';
@@ -240,6 +239,7 @@ function Database() {
 		}, function(err, rowsReturned){
 			if(err){console.log(err);}
 			else{
+				console.log("returning: " + openedDocs);
 				 callback(openedDocs);
 			}
 		});
@@ -329,17 +329,14 @@ function Database() {
 		var input = 'declare default element namespace "http://www.tei-c.org/ns/1.0";' +
 					'for $item in collection("' + this.db + '/' + collection + '") ' +
 					'return $item';
+					
+		console.log(input);
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
 			assert.equal(err, null);
-			//console.log(result.result);
 			callback(result.result);
 		});
-		// close query instance
-		query.close();
 		
-		// close session
-		this.session.close();
 	},
 	this.getFileRawData = function(collection, callback){
 		this.session = new basex.Session("localhost", 1984, "admin", "admin");

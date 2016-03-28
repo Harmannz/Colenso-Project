@@ -38,7 +38,7 @@ var express = require('express'),
 	fs = require('fs'),
 	log = require('./debug'),
 	session = require('express-session'),
-	deasync = require('deasync');
+	async = require('async');
 
 
 // Set up express
@@ -229,24 +229,51 @@ env.addFilter("date", nunjucksDate);
 		console.log("Rendered view");
 	});
 	router.get("/stats/downloadQueries", function(req,res,next){
-		
-		//var
-		//database.getAllQueried ==> returns array of json queries
-		// 	1. convert array of json into text 
-		//send text file as response
-		//stream all queries to file
 		res.set({"Content-Disposition":"attachment; filename=\"colenso-queries.txt\""});
-   
 		database.getAllQueriesInText(function(result){
 			var content = "";
-			//last item in result is the rowsReturned
-			//first remove the last item 
 			content = content.concat(result);
-			//for(var i = 0; )
-			console.log(content);
 			res.send(content);
 		});
 		
+	});
+	
+	router.get("/stats/downloadDoc", function(req,res){
+		console.log("download zip");
+		var zipfilename = "colenso-common-docs.zip";
+		var archive = archiver('zip');
+
+		archive.on('error', function(err) {
+			res.status(500).send({error: err.message});
+		});
+		//on stream closed we can end the request
+		archive.on('end', function() {
+			console.log('Archive wrote %d bytes', archive.pointer());
+		});
+		//set the archive name
+		res.attachment(zipfilename);
+		//this is the streaming magic
+		archive.pipe(res);
+		
+		//get 
+		database.get100CommonOpenedDocuments(function(result){
+			async.eachSeries(result, function(row, callback){
+				//console.log(row);
+				var path = row.author + "/" + row.filetype + "/" + row.path.split("/").pop();
+				var filename = row.path.split('/').pop();
+				var body = null;
+				database.getFileRawToEdit(path, function(result){
+					var $ = cheerio.load(result, { xmlMode: true });
+					body = $.html();
+					archive.append(body, {name : filename});
+					callback();
+				});
+
+			}, function done(){
+				console.log("done");
+				archive.finalize();
+			});
+		});
 	});
 	router.post("/upload",upload.single('file'), function(req,res,next){
 		"use strict";
@@ -438,24 +465,18 @@ var searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsea
 				});
 								
 				//here for each db:path split into author, filetype, filename
-				
-				for (var i = 0; i < paths.length; i++){
-					var filename = paths[i].split('/')[2];
+				async.eachSeries(paths, function(path, callback){
+					var filename = path.split('/')[2];
 					var body = null;
-					var done = false;
-					//do following until body != null after that archive.append
-					database.getFileRawToEdit(paths[i], function(result){
+					database.getFileRawToEdit(path, function(result){
 						var $ = cheerio.load(result, { xmlMode: true });
 						body = $.html();
-						done = true;						
+						archive.append(body, {name : filename});
+						callback();
 					});
-					deasync.loopWhile(function(){return !done;});
-					archive.append(body, {name : filename})
-					
-				}
-				
-				
-				archive.finalize();
+				}, function done(){
+					archive.finalize();
+				});
 				
 			});
 
