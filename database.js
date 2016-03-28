@@ -31,7 +31,7 @@ db.serialize(function(){
 		db.run('CREATE TABLE IF NOT EXISTS `upload-count` ( `id` INTEGER PRIMARY KEY, `count` INTEGER)');
    });
    
-	console.log("Table initialised");
+	console.log("Tables initialised");
 });
 
 	

@@ -108,7 +108,7 @@ env.addFilter("date", nunjucksDate);
 
 		var searchtype = req.query.searchtype;
 		var query = req.query.q;
-		var downloadZip = req.query.download ;
+		var downloadZip = req.query.download == "true" ;
 		var searchhistory = {searchtype : searchtype, searchstring : query};
 		
 		if (req.query.nestedsearch && req.query.searchtype && req.query.q){
@@ -127,6 +127,7 @@ env.addFilter("date", nunjucksDate);
 		searchandexplore(searchtype, query, req.session.searchhistory, req.query.nestedsearch, downloadZip, res);
     });
     
+	
 	router.get("/explore/:author", function(req, res){
 		"use strict";
 		req.session.searchhistory=[];
@@ -190,7 +191,7 @@ env.addFilter("date", nunjucksDate);
 		
 		viewFile(author, filetype, filename, doctype, res);
 	});
-    app.get("/contribute", function(req, res){
+    router.get("/contribute", function(req, res){
 		"use strict";
 		req.session.searchhistory=[];
 		database.loadStructure(function(rootNode){
@@ -198,7 +199,7 @@ env.addFilter("date", nunjucksDate);
 		});
 	});
 	
-	app.get("/stats", function(req,res){
+	router.get("/stats", function(req,res){
 		//query database to retrieve top 100 queries from searchtable database
 		//query database to retrieve top 100 opened from opened database
 		/* render statistics page with
@@ -227,7 +228,7 @@ env.addFilter("date", nunjucksDate);
 		//res.render('statistics');
 		console.log("Rendered view");
 	});
-	app.get("/stats/downloadQueries", function(req,res,next){
+	router.get("/stats/downloadQueries", function(req,res,next){
 		
 		//var
 		//database.getAllQueried ==> returns array of json queries
@@ -247,7 +248,7 @@ env.addFilter("date", nunjucksDate);
 		});
 		
 	});
-	app.post("/upload",upload.single('file'), function(req,res,next){
+	router.post("/upload",upload.single('file'), function(req,res,next){
 		"use strict";
 		req.session.searchhistory=[];
 		console.log(req.body);
@@ -276,7 +277,7 @@ env.addFilter("date", nunjucksDate);
 		
 	});
 	
-	app.post("/edit", function(req, res){
+	router.post("/edit", function(req, res){
 		"use strict";
 		req.session.searchhistory=[];
 		//req.body.updatedfile
@@ -391,7 +392,7 @@ var viewFile = function(author, filetype, filename, doctype, res){
 	}
 }
 
-searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch, downloadZip, res){
+var searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch, downloadZip, res){
 	//var builtQuery = parseQuery(rawQuery);
 	//console.log(rawQuery);
 	if (isnestedsearch && searchhistory && searchhistory.length >= 1){
