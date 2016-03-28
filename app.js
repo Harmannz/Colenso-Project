@@ -86,7 +86,20 @@ env.addFilter("date", nunjucksDate);
     router.get("/", function(req, res) {
         "use strict";
         req.session.searchhistory=[];
-		res.render('index', {isHomePage: true});
+		
+		database.getStatistics(function(result){
+			//result = {mostQueried : [..], mostOpened : [...], #viewed : INT, #uploaded : INT}
+			//here render
+			console.log(result.mostQueried);
+			res.render(
+			'index',{
+				mostQueried : result.mostQueried, 
+				documentsViewed : result.totalDocumentsViewed, 
+				documentsUploaded: result.totalDocumentsUploaded,
+				mostOpened : result.mostOpened
+			})
+		});
+//		res.render('index', {isHomePage: true});
     });
     
     // Explore
@@ -194,10 +207,45 @@ env.addFilter("date", nunjucksDate);
 			3. top 100 searchterms
 			4. top 100 opened 
 		*/
-		var mostQueried = database.get100CommonQueriedDocuments();
-		console.log(mostQueried);
-		res.render('statistics');
+		//var mostQueried = database.get100CommonQueriedDocuments();
+		
+		database.getStatistics(function(result){
+			//result = {mostQueried : [..], mostOpened : [...], #viewed : INT, #uploaded : INT}
+			//here render
+			console.log(result.mostQueried);
+			res.render(
+			'statistics',{
+				mostQueried : result.mostQueried, 
+				documentsViewed : result.totalDocumentsViewed, 
+				documentsUploaded: result.totalDocumentsUploaded,
+				mostOpened : result.mostOpened
+			})
+		});
+		
+		
+		//console.log('MostQueried: ' + mostQueried);
+		//res.render('statistics');
 		console.log("Rendered view");
+	});
+	app.get("/stats/downloadQueries", function(req,res,next){
+		
+		//var
+		//database.getAllQueried ==> returns array of json queries
+		// 	1. convert array of json into text 
+		//send text file as response
+		//stream all queries to file
+		res.set({"Content-Disposition":"attachment; filename=\"colenso-queries.txt\""});
+   
+		database.getAllQueriesInText(function(result){
+			var content = "";
+			//last item in result is the rowsReturned
+			//first remove the last item 
+			content = content.concat(result);
+			//for(var i = 0; )
+			console.log(content);
+			res.send(content);
+		});
+		
 	});
 	app.post("/upload",upload.single('file'), function(req,res,next){
 		"use strict";

@@ -5,10 +5,11 @@ var basex  = require("basex"),
 	log = require('./debug'),
 	Readable = require('stream').Readable,
 	fs = require('fs'),
-	sqlite3 = require("sqlite3").verbose();
+	sqlite3 = require("sqlite3").verbose(),
+	deasync = require('deasync');
 	
 //Setup sqlite database
-var dbFile = './database/test.db';
+var dbFile = './test.db';
 var dbExists = fs.existsSync(dbFile);
 	
 if(!dbExists){
@@ -24,8 +25,8 @@ db.serialize(function(){
 		// Queries scheduled here will run in parallel.
 		//create table to hold all searches 
 		db.run('CREATE TABLE IF NOT EXISTS `searchtable` (`date` TEXT, `query` TEXT)');
-		//create table to hold all documents that have been uploaded
-		db.run('CREATE TABLE IF NOT EXISTS `opened` (`path` TEXT PRIMARY KEY, `author` TEXT, `filetype` TEXT, `title` TEXT)')
+		//create table to hold all documents that have been opened
+		db.run('CREATE TABLE IF NOT EXISTS `opened` (`path` TEXT , `author` TEXT, `filetype` TEXT, `title` TEXT)')
 		//author, filetype, filename, path
 		db.run('CREATE TABLE IF NOT EXISTS `upload-count` ( `id` INTEGER PRIMARY KEY, `count` INTEGER)');
    });
@@ -122,7 +123,67 @@ function Database() {
 		// close session
 		this.session.close();
 	},
-	
+	this.getStatistics = function(callback){
+		var self = this;
+		self.get100CommonQueriedDocuments(function(result){
+			var mostQueried = result;
+			self.get100CommonOpenedDocuments(function(result){
+				var mostOpened = result;
+				self.getTotalDocumentsViewed(function(result){
+					var totalDocumentsViewed = result;
+					self.getTotalDocumentsUploaded(function(result){
+						var totalDocumentsUploaded = result;
+						callback({
+							mostQueried : mostQueried, 
+							mostOpened : mostOpened, 
+							totalDocumentsViewed : totalDocumentsViewed, 
+							totalDocumentsUploaded : totalDocumentsUploaded
+						});
+					});
+				});	
+			});
+				
+				
+				
+		});
+	/*	
+				self.get100CommonQueriedDocuments(function(result){
+					mostQueried = result;
+					done1 = true;
+
+				});
+			//	deasync.loopWhile(function(){return !done;});
+				
+				//done = false;
+				self.get100CommonOpenedDocuments(function(result){
+					mostOpened = result;
+					done2 = true;
+					console.log("mO: "  + mostOpened);
+					//done = true;						
+				});
+		//		deasync.loopWhile(function(){return !done;});
+
+			//	done = false;
+				self.getTotalDocumentsViewed(function(result){
+					totalDocumentsViewed = result;
+					done3 = true;
+
+				//	done = true;						
+				});
+		//		deasync.loopWhile(function(){return !done;});
+
+			//	done = false;
+				self.getTotalDocumentsUploaded(function(result){
+					totalDocumentsUploaded = result;
+					done3 = true;
+		//			done = true;						
+				});
+			
+		*/
+//		deasync.loopWhile(function(){ console.log("looping");return !mostQueried && !mostOpened && !totalDocumentsViewed && !totalDocumentsUploaded;});
+
+		
+	},
 	this.addQueryToDatabase = function(query){
 		
 		var stmt = db.prepare("INSERT INTO `searchtable` VALUES (?,?)");
@@ -138,12 +199,52 @@ function Database() {
 	},
 	this.get100CommonQueriedDocuments = function(callback){
 		var queries = [];
-		db.each("SELECT `query` COUNT(`query`) AS `occurrence` FROM `searchtable` GROUP BY `query` ORDER BY `occurrence` DESC LIMIT 100", function(err, row){
-			//console.log(row);
-			queries.push(row.query);
+		db.each("SELECT `query`, COUNT(`query`) AS `occurrence` FROM `searchtable` GROUP BY `query` ORDER BY `occurrence` DESC LIMIT 100", function(err, row){
+			if(err){console.log(err);}
+			else{
+				queries.push({query: row.query, occurrence: row.occurrence});
+			}
+		}, function(err, rowsReturned){
+			if(err){console.log(err);}
+			else{
+				 callback(queries);
+			}
 		});
-		return queries;
 	},
+	this.getAllQueriesInText = function(callback){
+		var queries = "";
+		db.each("SELECT `date`, `query` FROM `searchtable`", function(err, row){
+			if(err){
+				console.log(err);
+			}else{
+				if(row){
+					queries = queries.concat(JSON.stringify({date : row.date, query : row.query}) + "\r\n");
+				}
+			}
+		}, function(err, rowsReturned){
+			if (err){console.log(err);}
+			else{
+				queries = JSON.stringify({rowsReturned : rowsReturned}).concat("\r\n" + queries);
+				callback(queries);
+			}
+		});
+	},
+	this.get100CommonOpenedDocuments = function(callback){
+		var openedDocs = [];
+		
+		db.each("SELECT `path`, COUNT(`path`) AS `occurrence`, `author`, `filetype`, `title` FROM `opened` GROUP BY `path` ORDER BY `occurrence` DESC LIMIT 100", function(err, row){
+			if(err){console.log(err);}
+			else{
+				openedDocs.push({path : row.path, occurrence : row.occurrence, author : row.author, filetype : row.filetype, title : row.title});
+			}
+		}, function(err, rowsReturned){
+			if(err){console.log(err);}
+			else{
+				 callback(openedDocs);
+			}
+		});
+	},
+	
 	this.addOpenedFileToDatabase = function(path, author, filetype, title){
 		
 		var stmt = db.prepare("INSERT INTO `opened` VALUES (?, ?, ?, ?)");
@@ -159,24 +260,41 @@ function Database() {
 	},
 	this.incrementUploadCountInDatabase = function(){
 		//first query db to get upload count value
-		
+		var ROWID = 1;
 		//return count : oldCount + 1
-		db.get("SELECT id, count FROM `upload-count`", function(err, row){
-		    if (err) { console.log("Error adding to upload count");}
+		db.get("SELECT `id`, `count` FROM `upload-count`", function(err, row){
+		    if (err) { console.log("Error adding to upload count: " + err);}
 		    else {
-				// As an object with named parameters.
-				var id = row.id ? row.id : 1;
-				var count = row.count ? row.count + 1 : 1;
-      			db.run("UPDATE `upload-count` SET count = $count WHERE id = $id", {
-			       	$id: row.id,
-			    	$count: count
-			    });
+				if(row){
+					var id = row.id ? ROWID : 1;
+					var count = row.count ? row.count + 1 : 1;
+					db.run("UPDATE `upload-count` SET `count` = $count WHERE `id` = $id", {
+						$id: row.id,
+						$count: count
+					});
+				}else{
+					//insert data 
+					db.run("INSERT INTO `upload-count` VALUES (1, 1)");
+				}
 			}
 		});
-		
-		db.each("SELECT `id`, `count` FROM `upload-count`", function(err, row){
-			//console.log(row);
-			console.log("Id: " + row.id + ", Count: " + row.count);
+	},
+	this.getTotalDocumentsUploaded = function(callback){
+		db.get("SELECT `id`, `count` FROM `upload-count`", function(err, row){
+			if (err) { console.log("Error getting upload count");}
+			else{
+				//console.log(row);
+				callback(row && row.count ? row.count : 0);
+			}
+		});
+	},
+	this.getTotalDocumentsViewed = function(callback){
+		db.get("SELECT COUNT(*) as `count` FROM `opened`", function(err, row){
+			if (err) {console.log("Error in retrieving total documents viewed: " + err)}
+			else {
+				//console.log(row);
+				callback(row && row.count ? row.count :  0);
+			}
 		});
 	},
 	this.getFileRaw = function(collection, callback){

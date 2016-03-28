@@ -41,7 +41,7 @@
     {% include "includes/header.html" %}
 	
     <!-- About Section -->
-    <section id="about">
+    <section id="about" class="bg-light-gray">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12 text-center">
@@ -61,11 +61,11 @@
                             </div>
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
-                                    <h4>{documentsViewed} </h4>
+                                    <h4>{{documentsViewed}} </h4>
                                     <h4 class="subheading">Documents Viewed</h4>
                                 </div>
                                 <div class="timeline-body">
-                                    <p class="text-muted">Go To {explorelink} to search for many documents</p>
+                                    <p class="text-muted">Go To <a href="/explore" class="page-scroll">Explore</a> to search for many documents</p>
                                 </div>
                             </div>
                         </li>
@@ -78,11 +78,11 @@
                             </div>
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
-                                    <h4>{documentsUploaded}</h4>
+                                    <h4>{{documentsUploaded}}</h4>
                                     <h4 class="subheading">Documents Uploaded</h4>
                                 </div>
                                 <div class="timeline-body">
-                                    <p class="text-muted">Go To {uploadelink} to upload documents</p>
+                                    <p class="text-muted">Go To <a href="/contribute" class="page-scroll">Contribute</a> to upload documents</p>
                                 </div>
                             </div>
                         </li>
@@ -96,10 +96,7 @@
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
                                     <h4>Top 100 Searches</h4>
-                                    <h4 class="subheading">Click {Here} to see top searched documents</h4>
-                                </div>
-                                <div class="timeline-body">
-                                    <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p>
+                                    <h4 class="subheading">Click <a href="#queriedTable" class="page-scroll">Here</a> to see top searched documents</h4>
                                 </div>
                             </div>
                         </li>
@@ -113,10 +110,7 @@
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
                                     <h4>Top 100 Opened</h4>
-                                    <h4 class="subheading">Click {Here} to see the top opened documents</h4>
-                                </div>
-                                <div class="timeline-body">
-                                    <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p>
+                                    <h4 class="subheading">Click <a href="#openedTable" class="page-scroll">Here</a> to see the top opened documents</h4>
                                 </div>
                             </div>
                         </li>
@@ -135,49 +129,79 @@
 	
 	
 	
-	<section id="data"  class="bg-light-gray">
+	<section id="queriedTable">
 	
         <div class="container">		
-			
-            <table id="example-table" class="table table-striped table-bordered table-responsive">
+		<div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="section-heading">Most Common Searchterms</h2>
+                </div>
+            </div>
+		<div class="col-md-8 col-md-offset-2">
+            <table id="query-table" class="table table-striped table-bordered table-responsive">
 				<thead>
 					<tr>
-					<th>Top Queries</th>
+					<th>Occurrence</th>
+					<th>Search</th>
 					</tr>
 				</thead>
 				<tbody>
-					{% for link in links %}
+					{% for query in mostQueried %}
 					<tr>
-						{% if link.query %}
-							<td>{{link.query}}</td>
-						{% endif %}							
+						{% if query.occurrence %}
+							<td>{{query.occurrence}}</td>
+						{% endif %}						
+						{% if query.query %}
+							<td>{{query.query}}</td>
+						{% endif %}
 					</tr>
 					{% endfor %}
 				</tbody>
 			</table>
+			</div>
         </div>
     </section>
 	
-	<section id="data"  class="bg-light-gray">
+	<section id="openedTable" >
 	
         <div class="container">		
-			
-            <table id="example-table" class="table table-striped table-bordered table-responsive">
+			<div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="section-heading">Most Opened Documents</h2>
+                </div>
+            </div>
+			<div class="col-md-8 col-md-offset-2">
+            <table id="opened-table" class="table table-striped table-bordered table-responsive">
 				<thead>
 					<tr>
-					<th>Top Viewed</th>
+					<th>Occurrence</th>
+					<th>Author</th>
+					<th>Filetype</th>
+					<th>Title</th>
 					</tr>
 				</thead>
 				<tbody>
-					{% for link in links %}
+					{% for link in mostOpened %}
 					<tr>
-						{% if link.query %}
-							<td>{{link.query}}</td>
-						{% endif %}							
+						{% if link.occurrence %}
+							<td>{{link.occurrence}}</td>
+						{% endif %}	
+						{% if link.author %}
+							<td>{{link.author | replace("_", " ") | capitalize}}</td>
+						{% elif link.author == '' %}
+							<td>Unknown Author</td>
+						{% endif %}	
+						
+						{% if link.filetype %}
+							<td>{{link.filetype | replace("_", " ") | capitalize}}</td>
+						{% endif %}	
+								
+						<td><a href="{{link.path}}">{{link.title}}</a></td>
 					</tr>
 					{% endfor %}
 				</tbody>
 			</table>
+			</div>
         </div>
     </section>
 	
@@ -197,4 +221,20 @@
 	<script type="text/javascript" src="/static/DataTables-1.10.11/js/jquery.dataTables.min.js"></script>
 	<script type="text/javascript" src="/static/DataTables-1.10.11/js/dataTables.bootstrap.min.js"></script>
 	
+	<script>
+	$(document).ready(function() {
+		$('#query-table').DataTable({
+			"order": [[ 0, "desc" ]],
+			"bFilter": false,
+    	    "bInfo": false,
+    	    "dom": 'rt<"bottom"flp>'
+		});
+		$('#opened-table').DataTable({
+			"order": [[ 0, "desc" ]],
+			"bFilter": false,
+    	    "bInfo": false,
+    	    "dom": 'rt<"bottom"flp>'
+		});
+	} );
+	</script>
 </html>
