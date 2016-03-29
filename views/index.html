@@ -19,6 +19,13 @@
 	
 	<!-- Particles.js CSS -->
     <link href="/static/css/particle-js.css" rel="stylesheet">
+	
+	<!-- Custom CSS -->
+    <link href="/static/css/style.css" rel="stylesheet">
+	<!-- Datatables CSS -->
+	<link rel="stylesheet" type="text/css" href="/static/DataTables-1.10.11/css/dataTables.bootstrap.min.css"/>
+	<link rel="icon" href="/static/img/icon/favicon.png">
+
 
     <!-- Custom Fonts -->
     <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
@@ -91,8 +98,10 @@
             </div>
         </div>
     </section>
+	
+	{% include "includes/statistics.html" %}
 
-    <aside class="clients">
+	<aside class="clients">
         <div class="container">
             <div class="row">
                 <div class="col-sm-6 col-sm-offset-3">
@@ -101,7 +110,8 @@
             </div>
         </div>
     </aside>
-    
+	
+	
 	{% include "includes/footer.html" %}
     
     <!-- Plugin JavaScript -->
@@ -115,6 +125,26 @@
 	<!-- particles-js -->
 	<script src="/static/js/particles.js/particles.js"></script>
 	<script src="/static/js/particles.js/app.js"></script>
+	
+	<script type="text/javascript" src="/static/DataTables-1.10.11/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="/static/DataTables-1.10.11/js/dataTables.bootstrap.min.js"></script>
+	
+	<script>
+	$(document).ready(function() {
+		$('#query-table').DataTable({
+			"order": [[ 0, "desc" ]],
+			"bFilter": false,
+    	    "bInfo": false,
+    	    "dom": 'rt<"bottom"flp>'
+		});
+		$('#opened-table').DataTable({
+			"order": [[ 0, "desc" ]],
+			"bFilter": false,
+    	    "bInfo": false,
+    	    "dom": 'rt<"bottom"flp>'
+		});
+	} );
+	</script>
 </body>
 
 </html>

@@ -37,7 +37,7 @@
 
 </head>
 
-<body id="page-top" class="index">
+<body id="page-top" class="explore">
 
     {% include "includes/header.html" %}
 	
@@ -61,6 +61,11 @@
 			</div>
 			{% endif %}
             <div class="row">
+				{% if searchError %}
+				<div class="alert alert-success text-center">
+					<strong>Error!</strong> Please search using syntax and search type. Click <a href="/searchhelp" >here</a> for more info. 
+				</div>
+				{% endif %}
 				<div class="col-md-3">
 					<div class="list-group">
 						{% for category,value in categories %}
@@ -79,8 +84,7 @@
 					<form class="form" action="/explore" id="search-form">
 						<div class="input-group">
 							<input type="hidden" name="searchtype" value="text" id="searchtype"/>
-							<input type="hidden" name="download" value="" id="download"/>
-							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder="Search... " {% else %} value ="{{query}}" {% endif %} >
+							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder='"William" AND "Colenso" ' {% else %} value ="{{query | last}}" {% endif %} >
 							
 							<span class="input-group-btn">
 								<button class="btn btn-default" type="button" onclick="textsearchbuttonHandled(event);" id="search-button">Text Search</button>
@@ -91,7 +95,9 @@
 					<div class="row">
 						<div class="col-md-6">
 						{% if query %}
-							<p {% if isNestedQuery %} class="text-muted no-margin pull-left" {% else %} class="text-muted pull-left" {% endif %}>Showing results for {{query}}</p>
+							<p {% if isNestedQuery %} class="text-muted no-margin pull-left" {% else %} class="text-muted pull-left" {% endif %}>
+								Showing results for {% for q in query %} {% if loop.first %}{{q}} {% else %} > {{q}} {% endif %}{% endfor %}
+							</p>
 						{% endif %}
 						</div>
 						
@@ -104,7 +110,7 @@
 					
 						
 					{% if isNestedQuery %}
-						<a  class="download-link" href="PleaseEnableJavascript.html" onclick="downloadZipHandled(event);return false;" >Download All?</a>
+						<a  class="download-link" href="/nested/download" >Download All?</a>
 					{% endif %}
 						<!-- /input-group -->
 
@@ -178,10 +184,6 @@
 		document.getElementById("search-form").submit();	
 	}
 	
-	function downloadZipHandled(event){
-		document.getElementById("download").value="true";
-		document.getElementById("search-form").submit();	
-	}
 	</script>
 </body>
 
