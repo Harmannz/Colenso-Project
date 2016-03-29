@@ -108,7 +108,6 @@ env.addFilter("date", nunjucksDate);
 
 		var searchtype = req.query.searchtype;
 		var query = req.query.q;
-		var downloadZip = req.query.download == "true" ;
 		var searchhistory = {searchtype : searchtype, searchstring : query};
 		
 		if (req.query.nestedsearch && req.query.searchtype && req.query.q){
@@ -124,10 +123,65 @@ env.addFilter("date", nunjucksDate);
 		console.log("query: " + query);
 		//if nested search then 
 		
-		searchandexplore(searchtype, query, req.session.searchhistory, req.query.nestedsearch, downloadZip, res);
+		searchandexplore(searchtype, query, req.session.searchhistory, req.query.nestedsearch, res);
     });
     
 	
+	router.get("/nested/download", function(req,res,next){
+		console.log(req.session.searchhistory);
+		var searchhistory = req.session.searchhistory ? req.session.searchhistory : [];
+		
+		var zipfilename = "colenso-docs.zip";
+			
+			var archive = archiver('zip');
+
+			archive.on('error', function(err) {
+				res.status(500).send({error: err.message});
+			});
+
+			//on stream closed we can end the request
+			archive.on('end', function() {
+				console.log('Archive wrote %d bytes', archive.pointer());
+			});
+
+			//set the archive name
+			res.attachment(zipfilename);
+			
+			//this is the streaming magic
+			archive.pipe(res);
+			
+			var paths = [];
+			//get 
+			database.getNestedQueryPaths(searchhistory, function(result){
+				//here the links I will have list of db:paths 
+				var $ = cheerio.load(result, { xmlMode: true });
+				
+				$('link').each(function(i, elem){
+					
+					paths.push($(elem).find('path').text());
+					
+				});
+								
+				//here for each db:path split into author, filetype, filename
+				async.eachSeries(paths, function(path, callback){
+					var filename = path.split('/')[2];
+					var body = null;
+					database.getFileRawToEdit(path, function(result){
+						var $ = cheerio.load(result, { xmlMode: true });
+						body = $.html();
+						archive.append(body, {name : filename});
+						callback();
+					});
+				}, function done(){
+					archive.finalize();
+				});
+				
+			});
+	});
+	
+	router.get("/searchhelp", function(req, res){
+		res.render("searchhelp");
+	});
 	router.get("/explore/:author", function(req, res){
 		"use strict";
 		req.session.searchhistory=[];
@@ -349,6 +403,31 @@ env.addFilter("date", nunjucksDate);
         console.log('Colenso Project listening on port %s.', port);
     });
 	
+	// catch 404 and forward to error handler
+	app.use(function(req, res, next) {
+	  var err = new Error('Not Found');
+	  err.status = 404;
+	  next(err);
+	});
+
+	// error handlers
+
+	// development error handler
+	// will print stacktrace
+	if (app.get('env') === 'development') {
+	  app.use(function(err, req, res, next) {
+		res.status(err.status || 500);
+		res.render('error',{err : {message : err.message, error: err}});
+		
+	  });
+	}
+
+	// production error handler
+	// no stacktraces leaked to user
+	app.use(function(err, req, res, next) {
+	  res.status(err.status || 500);
+	  res.render('error', {err : {message : err.message, error : {}}});
+	});
 	
 var viewFile = function(author, filetype, filename, doctype, res){
 	
@@ -420,68 +499,10 @@ var viewFile = function(author, filetype, filename, doctype, res){
 	}
 }
 
-var searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch, downloadZip, res){
+var searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsearch, res){
 	//var builtQuery = parseQuery(rawQuery);
 	//console.log(rawQuery);
 	if (isnestedsearch && searchhistory && searchhistory.length >= 1){
-		/*
-		if(not download)
-		searchhistory has array of search history
-		send searchhistory to database and that will create the search query
-		
-		then return 
-		if (downloadzip)
-			perform query but get full xml of each file and send content-type :'application/zip'
-		*/
-		if (downloadZip){
-			var zipfilename = "colenso-docs.zip";
-			
-			var archive = archiver('zip');
-
-			archive.on('error', function(err) {
-				res.status(500).send({error: err.message});
-			});
-
-			//on stream closed we can end the request
-			archive.on('end', function() {
-				console.log('Archive wrote %d bytes', archive.pointer());
-			});
-
-			//set the archive name
-			res.attachment(zipfilename);
-			
-			//this is the streaming magic
-			archive.pipe(res);
-			
-			var paths = [];
-			//get 
-			database.getNestedQueryPaths(searchhistory, function(result){
-				//here the links I will have list of db:paths 
-				var $ = cheerio.load(result, { xmlMode: true });
-				
-				$('link').each(function(i, elem){
-					
-					paths.push($(elem).find('path').text());
-					
-				});
-								
-				//here for each db:path split into author, filetype, filename
-				async.eachSeries(paths, function(path, callback){
-					var filename = path.split('/')[2];
-					var body = null;
-					database.getFileRawToEdit(path, function(result){
-						var $ = cheerio.load(result, { xmlMode: true });
-						body = $.html();
-						archive.append(body, {name : filename});
-						callback();
-					});
-				}, function done(){
-					archive.finalize();
-				});
-				
-			});
-
-		}else{
 			//Perform Nested Search
 			database.loadStructure(function(rootNode){
 				database.nestedSearch(searchhistory, function(result){
@@ -511,7 +532,7 @@ var searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsea
 						});
 				});
 			});
-		}
+		
 	}
 	else if (searchtype == "text" && rawQuery){
 		//parse the text search format : "text" AND/OR/NOT "  ";
@@ -526,10 +547,10 @@ var searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsea
 		//query = parseQuery(query);
 		database.loadStructure(function(rootNode){
 			database.textSearch(rawQuery, function(result){
-				if (!result){
+				if (!result.ok){
 					loadDefault(res, true);
 				}else{
-					var $ = cheerio.load(result, { xmlMode: true });
+					var $ = cheerio.load(result.result, { xmlMode: true });
 					var links = [];
 					$('link').each(function(i, elem){
 						
@@ -553,11 +574,11 @@ var searchandexplore = function(searchtype, rawQuery, searchhistory, isnestedsea
 			
 			database.loadStructure(function(rootNode){
 				database.markupSearch(rawQuery, function(result){
-					if (!result){
+					if (!result.ok){
 						loadDefault(res, true);
 					}else{
 						//if result empty then 
-						var $ = cheerio.load(result, { xmlMode: true });
+						var $ = cheerio.load(result.result, { xmlMode: true });
 						var links = [];
 						$('link').each(function(i, elem){
 							

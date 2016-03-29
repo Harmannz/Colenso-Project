@@ -5,8 +5,8 @@ var basex  = require("basex"),
 	log = require('./debug'),
 	Readable = require('stream').Readable,
 	fs = require('fs'),
-	sqlite3 = require("sqlite3").verbose(),
-	xsd = require('libxml-xsd');
+	sqlite3 = require("sqlite3").verbose();
+	//tmp = require('tmp');
 	
 //Setup sqlite database
 var dbFile = './test.db';
@@ -378,15 +378,16 @@ function Database() {
 		console.log(input);
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
-			if (!err == null){
-				callback("");
-			}
+			
+			if (err){
+				callback({ok: false});
+			}else{
 			//assert.equal(err, null);
 			//console.log(result.result);
-			if (result){
+			
 				originalQuery ? self.addQueryToDatabase(originalQuery) : ""; 
-				callback(result.result)
-			}else{ callback("");}
+				callback(result)
+			}
 		});			
 		
 		
@@ -418,12 +419,13 @@ function Database() {
 
 		var query = this.session.query(input);
 		query.execute(function (err, result) {
-			//assert.equal(err, null);
-			//console.log(result.result);
-			if(result){
+			
+			if (err){
+				callback({ok: false});
+			}else{
 				originalQuery ? self.addQueryToDatabase(originalQuery) : ""; 
-				callback(result.result)
-			}else{callback("");}
+				callback(result)
+			}
 		});			
 		
 		/*
@@ -477,9 +479,10 @@ function Database() {
 	},
 	this.validateXML = function(xmlToValidate, callback){
 		
+
 		var session = new basex.Session("localhost", 1984, "admin", "admin");
 		var validateXMLQuery = 'let $doc := ' + xmlToValidate +
-							" let $schema := <xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' targetNamespace='http://www.tei-c.org/ns/1.0'>     <xs:element name='TEI'/>   </xs:schema>" +
+							" let $schema := 'http://www.tei-c.org/release/xml/tei/custom/schema/xsd/tei_all.xsd'" +
 							' return validate:xsd($doc, $schema)';
 							
 		var query = session.query(validateXMLQuery);
@@ -489,8 +492,50 @@ function Database() {
 				session.close();
 			
 		});		
-		/*
 		
+			/*
+		
+		var tmpobj = tmp.fileSync();
+		console.log("File: ", tmpobj.name);
+		console.log("Filedescriptor: ", tmpobj.fd);
+		
+		var session = new basex.Session("localhost", 1984, "admin", "admin");
+		var validateXMLQuery = "XQUERY validate:xsd('" + tmpobj.name+ "', 'http://www.tei-c.org/release/xml/tei/custom/schema/xsd/tei_all.xsd')";
+		//var query = session.query(validateXMLQuery);	
+		// If we don't need the file anymore we could manually call the removeCallback 
+		// But that is not necessary if we didn't pass the keep option because the library 
+		// will clean after itself. 
+		console.log(validateXMLQuery);
+		session.execute("XQUERY validate:xsd('" + tmpobj.name+ "', 'http://www.tei-c.org/release/xml/tei/custom/schema/xsd/tei_all.xsd')", function (err, result) {				
+				console.log(err);
+				console.log(result);
+				callback(result);
+				session.close();
+				tmpobj.removeCallback();
+				
+			});
+		
+		tmp.file(function _tempFileCreated(err, path, fd, cleanupCallback) {
+			  if (err) throw err;
+			  var session = new basex.Session("localhost", 1984, "admin", "admin");
+			  console.log("File: ", path);
+			  console.log("Filedescriptor: ", fd);
+			  var validateXMLQuery = "XQUERY validate:xsd('" + path+ "', 'http://www.tei-c.org/release/xml/tei/custom/schema/xsd/tei_all.xsd')";
+			  var query = session.query(validateXMLQuery);
+			console.log('VALIDATING XML QUERY \n****************************'  + validateXMLQuery);
+			query.execute(function (err, result) {				
+				console.log(err);
+				console.log(result);
+				callback(result);
+				session.close();
+				
+			});
+			  // If we don't need the file anymore we could manually call the cleanupCallback 
+			  // But that is not necessary if we didn't pass the keep option because the library 
+			  // will clean after itself. 
+			  console.log("closing file");
+		});
+
 
 		var schemaPath ="resources/tei_bare.xsd"; 
 		fs.readFile(schemaPath, 'utf-8', function(err, schema){
@@ -501,8 +546,8 @@ function Database() {
 			}
 			var session = new basex.Session("localhost", 1984, "admin", "admin");
 			var validateXMLQuery = 'let $doc := ' + xmlToValidate +
-								' let $schema := "'  + schema +
-								' return validate:rng($doc, $schema)';
+								" let $schema := '"  + schema +
+								"' return validate:xsd($doc, $schema)";
 								
 			var query = session.query(validateXMLQuery);
 			console.log('VALIDATING XML QUERY \n****************************'  + validateXMLQuery);
@@ -511,7 +556,8 @@ function Database() {
 				session.close();
 			});
 			});
-			/*
+			
+		});
 		var schemaPath ="resources/tei_all.xsd";
 		xsd.parseFile(schemaPath, function(err, schema){
 			schema.validate(xmlToValidate, function(err, validationErrors){

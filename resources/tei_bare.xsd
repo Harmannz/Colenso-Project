@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.tei-c.org/ns/1.0" xmlns:ns1="http://www.tei-c.org/ns/1.0">
-  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="resources/tei_bare_xml.xsd"/>
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="https://www.w3.org/2001/xml.xsd"/>
+  
   <!--
     Schema generated from ODD source 2015-10-15T19:57:15Z. .
-    TEI Edition: Version 2.9.1. Last updated on
+    TEI Edition: VersionÂ 2.9.1. Last updated on
     	15th October 2015, revision 46ac023
-    TEI Edition Location: http://www.tei-c.org/Vault/P5/Version 2.9.1/
+    TEI Edition Location: http://www.tei-c.org/Vault/P5/VersionÂ 2.9.1/
     
   -->
   <!-- This template file is freely available and you are hereby authorised to copy, modify, and redistribute it in any way without further reference or permissions. When making such modifications, you are strongly recommended to change the present text to include an accurate statement of the licencing conditions applicable to your modified text. -->
@@ -153,12 +153,12 @@
   <xs:attributeGroup name="att.global.attributes">
     <xs:attributeGroup ref="ns1:att.global.rendition.attributes"/>
     <xs:attributeGroup ref="ns1:att.global.responsibility.attributes"/>
-    <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
+    
     <xs:attributeGroup ref="ns1:att.global.attribute.n"/>
     <xs:attributeGroup ref="ns1:att.global.attribute.xmllang"/>
   </xs:attributeGroup>
   <xs:attributeGroup name="att.global.attribute.xmlid">
-    <xs:attribute ref="xml:id"/>
+    <xs:attribute ref="xml:id" />
   </xs:attributeGroup>
   <xs:attributeGroup name="att.global.attribute.n">
     <xs:attribute name="n" type="ns1:data.text">
@@ -577,6 +577,7 @@ Suggested values include: 1] below; 2] bottom; 3] margin; 4] top; 5] opposite; 6
         </xs:choice>
       </xs:sequence>
       <xs:attributeGroup ref="ns1:att.global.attributes"/>
+      <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
       <xs:attributeGroup ref="ns1:att.sortable.attributes"/>
       <xs:attributeGroup ref="ns1:att.typed.attribute.subtype"/>
       <xs:attribute name="type">
@@ -644,6 +645,7 @@ Suggested values include: 1] gloss; 2] index; 3] instructions; 4] litany; 5] syl
       <xs:complexContent>
         <xs:extension base="ns1:macro.specialPara">
           <xs:attributeGroup ref="ns1:att.global.attributes"/>
+          <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
           <xs:attributeGroup ref="ns1:att.sortable.attributes"/>
         </xs:extension>
       </xs:complexContent>
@@ -657,6 +659,7 @@ Suggested values include: 1] gloss; 2] index; 3] instructions; 4] litany; 5] syl
       <xs:complexContent>
         <xs:extension base="ns1:macro.phraseSeq">
           <xs:attributeGroup ref="ns1:att.global.attributes"/>
+          <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
           <xs:attributeGroup ref="ns1:att.typed.attributes"/>
           <xs:attributeGroup ref="ns1:att.placement.attributes"/>
         </xs:extension>
@@ -673,6 +676,7 @@ Suggested values include: 1] gloss; 2] index; 3] instructions; 4] litany; 5] syl
         <xs:group ref="ns1:model.inter"/>
       </xs:choice>
       <xs:attributeGroup ref="ns1:att.global.attributes"/>
+      <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
       <xs:attributeGroup ref="ns1:att.typed.attributes"/>
     </xs:complexType>
   </xs:element>
@@ -684,6 +688,7 @@ Suggested values include: 1] gloss; 2] index; 3] instructions; 4] litany; 5] syl
       <xs:complexContent>
         <xs:extension base="ns1:macro.phraseSeq">
           <xs:attributeGroup ref="ns1:att.global.attributes"/>
+          <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
           <xs:attributeGroup ref="ns1:att.naming.attributes"/>
         </xs:extension>
       </xs:complexContent>
@@ -697,6 +702,7 @@ Suggested values include: 1] gloss; 2] index; 3] instructions; 4] litany; 5] syl
       <xs:complexContent>
         <xs:extension base="ns1:macro.paraContent">
           <xs:attributeGroup ref="ns1:att.global.attributes"/>
+          <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
           <xs:attributeGroup ref="ns1:att.canonical.attributes"/>
           <xs:attributeGroup ref="ns1:att.typed.attribute.subtype"/>
           <xs:attribute name="type" type="ns1:data.enumerated">
@@ -717,6 +723,7 @@ Sample values include: 1] main; 2] sub(subordinate) ; 3] alt(alternate) ; 4] sho
       <xs:complexContent>
         <xs:extension base="ns1:fileDesc">
           <xs:attributeGroup ref="ns1:att.global.attributes"/>
+          <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
           <xs:attribute name="type" default="text" type="ns1:data.enumerated">
             <xs:annotation>
               <xs:documentation>specifies the kind of document to which the header is attached, for example whether it is a corpus or individual text.
@@ -745,6 +752,7 @@ Sample values include: 1] text; 2] corpus</xs:documentation>
         <xs:element maxOccurs="unbounded" ref="ns1:sourceDesc"/>
       </xs:sequence>
       <xs:attributeGroup ref="ns1:att.global.attributes"/>
+      <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="titleStmt">
@@ -757,6 +765,7 @@ Sample values include: 1] text; 2] corpus</xs:documentation>
         <xs:group minOccurs="0" maxOccurs="unbounded" ref="ns1:model.respLike"/>
       </xs:sequence>
       <xs:attributeGroup ref="ns1:att.global.attributes"/>
+      <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="publicationStmt">
@@ -766,6 +775,7 @@ Sample values include: 1] text; 2] corpus</xs:documentation>
     <xs:complexType>
       <xs:group maxOccurs="unbounded" ref="ns1:model.pLike"/>
       <xs:attributeGroup ref="ns1:att.global.attributes"/>
+      <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="sourceDesc">
@@ -778,6 +788,7 @@ Sample values include: 1] text; 2] corpus</xs:documentation>
         <xs:group maxOccurs="unbounded" ref="ns1:model.listLike"/>
       </xs:choice>
       <xs:attributeGroup ref="ns1:att.global.attributes"/>
+      <xs:attributeGroup ref="ns1:att.global.attribute.xmlid"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="TEI">
@@ -790,6 +801,8 @@ Sample values include: 1] text; 2] corpus</xs:documentation>
         <xs:element ref="ns1:text"/>
       </xs:sequence>
       <xs:attributeGroup ref="ns1:att.global.attributes"/>
+      <xs:attribute ref="xml:id" use="required"/>
+      
     </xs:complexType>
   </xs:element>
   <xs:element name="text">
