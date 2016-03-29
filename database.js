@@ -5,7 +5,8 @@ var basex  = require("basex"),
 	log = require('./debug'),
 	Readable = require('stream').Readable,
 	fs = require('fs'),
-	sqlite3 = require("sqlite3").verbose();
+	sqlite3 = require("sqlite3").verbose(),
+	xsd = require('libxml-xsd');
 	
 //Setup sqlite database
 var dbFile = './test.db';
@@ -475,7 +476,7 @@ function Database() {
 		//return "Testing";
 	},
 	this.validateXML = function(xmlToValidate, callback){
-		/*
+		
 		var session = new basex.Session("localhost", 1984, "admin", "admin");
 		var validateXMLQuery = 'let $doc := ' + xmlToValidate +
 							" let $schema := <xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' targetNamespace='http://www.tei-c.org/ns/1.0'>     <xs:element name='TEI'/>   </xs:schema>" +
@@ -488,10 +489,9 @@ function Database() {
 				session.close();
 			
 		});		
-		
+		/*
 		
 
-*/
 		var schemaPath ="resources/tei_bare.xsd"; 
 		fs.readFile(schemaPath, 'utf-8', function(err, schema){
 			if (err){
@@ -511,7 +511,23 @@ function Database() {
 				session.close();
 			});
 			});
-		
+			/*
+		var schemaPath ="resources/tei_all.xsd";
+		xsd.parseFile(schemaPath, function(err, schema){
+			schema.validate(xmlToValidate, function(err, validationErrors){
+				if (err){console.log(err);}
+				else {
+					console.log(validationErrors);
+					if(!validationErrors){
+						callback({ok:true});					
+					}else{
+					callback({ok:false});
+					}
+				}			
+			
+			});
+		});
+		*/
 	},
 	this.updateFile = function(path, inputStream, callback){
 		
@@ -569,7 +585,7 @@ function Database() {
 					' let $path := db:path(root($item)) ' +
 					'let $title := root($item)/TEI/teiHeader/fileDesc//titleStmt//title/text() ' +
 					'let $author := root($item)/TEI/teiHeader//titleStmt//author//text() ' +
-					'order by $item' +
+					'order by $item ' +
 					'return <link><path>{$path}</path><title>{$title}</title><author>{$author}</author></link>';
 					
 		console.log(query);

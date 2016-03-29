@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.tei-c.org/ns/1.0" xmlns:ns1="http://www.tei-c.org/ns/1.0">
-  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="resources/tei_bare_xml.xsd"/>
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="resoureces/tei_bare_xml.xsd"/>
   <!--
     Schema generated from ODD source 2015-10-15T19:57:15Z. .
     TEI Edition: Version 2.9.1. Last updated on
