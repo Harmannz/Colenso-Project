@@ -475,7 +475,7 @@ function Database() {
 		//return "Testing";
 	},
 	this.validateXML = function(xmlToValidate, callback){
-		
+		/*
 		var session = new basex.Session("localhost", 1984, "admin", "admin");
 		var validateXMLQuery = 'let $doc := ' + xmlToValidate +
 							" let $schema := <xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' targetNamespace='http://www.tei-c.org/ns/1.0'>     <xs:element name='TEI'/>   </xs:schema>" +
@@ -491,34 +491,27 @@ function Database() {
 		
 		
 
-/*
+*/
 		var schemaPath ="resources/tei_bare.xsd"; 
 		fs.readFile(schemaPath, 'utf-8', function(err, schema){
 			if (err){
 				console.log("error in readfile");
 				console.log(err);
-				callback(false);
+				callback({ok:false});
 			}
 			var session = new basex.Session("localhost", 1984, "admin", "admin");
 			var validateXMLQuery = 'let $doc := ' + xmlToValidate +
-								" let $schema :="  + schema +
-								' return validate:xsd($doc, $schema)';
+								' let $schema := "'  + schema +
+								' return validate:rng($doc, $schema)';
 								
 			var query = session.query(validateXMLQuery);
-			console.log(validateXMLQuery);
-			query.execute(function (err, result) {
-				if (result.ok){
-					callback(true);
-					session.close();
-				}else{
-					console.log(result);
-					console.log(err);
-					callback(false);
-					session.close();
-				}
+			console.log('VALIDATING XML QUERY \n****************************'  + validateXMLQuery);
+			query.execute(function (err, result) {				
+				callback(result);
+				session.close();
 			});
-		});
-		*/
+			});
+		
 	},
 	this.updateFile = function(path, inputStream, callback){
 		
