@@ -69,14 +69,17 @@
 						<ul>
 							<li>"William" AND "Colenso"</li>
 							<li>"William" OR "Colenso"</li>
-							<li>"William" AND NOT "Colenso"</li>
+							<li>"William" && "Colenso"</li>
+							<li>"William" || "Colenso"</li>
+							<li>NOT and ! are also supported</li>
 						</ul>
 						</li>
+					<p class="text-muted"> You can use any combination of logical operators </p>
 					<li>Text search can also perform complicated seraching such as:
 						<ul>
 							<li>"William" ft:or "Colenso"</li>
 							<li>"William" ft:and "Colenso"</li>
-							<li>As well as operations specified <a href = "http://docs.basex.org/wiki/Full-Text_Module">here</a></li>
+							<li>As well as operations specified <a href = "http://docs.basex.org/wiki/Full-Text#Combining_Results">here</a></li>
 						</ul>
 					</li>
 					</ol>
@@ -95,6 +98,7 @@
 					<li>Type XPATH queries and click markup search button such as: 
 						<ul>
 							<li>//author</li>
+							<li>//name[@type='place']</li>
 						</ul>
 					</li>
 					<li>Markup search caters for full XPATH queries as appropriate	
@@ -121,9 +125,9 @@
 				
 				<p class="text-muted">
 					With nested search you have the opportunity to instantly
-					download all the documents returned by the nested serarch.
+					download all the documents returned by the nested search.
 				</p>
-				<p class="text-muted"> Simply click the <a href="#">Download All?</a> button
+				<p class="text-muted">Simply click the <a href="#">Download All?</a> button
 				</p>
 			</div>
 		</div>

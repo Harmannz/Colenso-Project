@@ -84,7 +84,7 @@
 					<form class="form" action="/explore" id="search-form">
 						<div class="input-group">
 							<input type="hidden" name="searchtype" value="text" id="searchtype"/>
-							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder='"William" AND "Colenso" ' {% else %} value ="{{query | last}}" {% endif %} >
+							<input type="text" name="q" class="form-control" id="search-text" {% if not query %} placeholder='Search documents here using text or markup search' {% else %} value ="{{query | last}}" {% endif %} >
 							
 							<span class="input-group-btn">
 								<button class="btn btn-default" type="button" onclick="textsearchbuttonHandled(event);" id="search-button">Text Search</button>
