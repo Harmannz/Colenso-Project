@@ -1,0 +1,2 @@
+Licence for Datables can be found here : https://datatables.net/license/mit
+Licence for startbootstrap-agency can be found here : https://github.com/BlackrockDigital/startbootstrap-agency/blob/gh-pages/LICENSE
