@@ -687,8 +687,11 @@ parseQuery = function(rawQuery){
 				for (var i = 0; i < operators.length ; i++){
 					var operator = operators[i];
 					operator.toLowerCase() == "and" ? operators[i] = "ftand" : '';
+					operator.toLowerCase() == "&&" ? operators[i] = "ftand" : '';
 					operator.toLowerCase() == "or" ? operators[i] = "ftor" : '';
+					operator.toLowerCase() == "||" ? operators[i] = "ftor" : '';
 					operator.toLowerCase() == "not" ? operators[i] = "ftnot" : '';
+					operator.toLowerCase() == "!" ? operators[i] = "ftnot" : '';
 				}
 				
 				p1 = " "+ operators.join(" ");			
